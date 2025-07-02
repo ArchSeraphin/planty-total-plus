@@ -6,3 +6,65 @@ Author URI: https://www.https://hashthemes.com/
 Template: total-plus
 Version: 1.0
 */
+
+/* Import Font */
+@font-face {
+    font-family: 'Syne';
+    src: url('/wp-content/uploads/fonts/Syne-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Syne';
+    src: url('/wp-content/uploads/fonts/Syne-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Syne';
+    src: url('/wp-content/uploads/fonts/Syne-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Syne';
+    src: url('/wp-content/uploads/fonts/Syne-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Syne';
+    src: url('/wp-content/uploads/fonts/Syne-ExtraBold.woff2') format('woff2');
+    font-weight: 800;
+    font-style: normal;
+}
+/* FIN Import Font */
+
+p, a {
+    font-family: 'Syne', sans-serif;
+    font-weight: 400;
+}
+
+/* A supprimer si pas de Title Bar */
+.ht-main-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+}
+/* A supprimer si pas de Title Bar */
+
+h1, h2, h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+}
+
+h1 {
+    text-transform: uppercase;
+}
+
+.h2-title-other {
+    font-weight: 700;
+}
