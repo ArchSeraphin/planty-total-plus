@@ -58,3 +58,51 @@ h1, h2, h3 {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
 }
+
+
+/* FOOTER */
+.footer-canettes {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    overflow: hidden;
+    text-align: center;
+    background: #fff;
+}
+
+.footer-canettes img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.footer-mentions {
+    text-align: center;
+    font-size: 14px;
+    margin: 15px 0 20px;
+    background: #fff;
+}
+
+/*.footer-mentions a {
+    text-decoration: none;
+    color: #000;
+}
+
+.footer-mentions a:hover {
+    text-decoration: underline;
+}*/
+
+#ht-colophon a {
+    color: #000;
+}
+
+#ht-colophon:before {
+    background: none;
+}
+
+#ht-colophon a:hover {
+    text-decoration: underline;
+}
