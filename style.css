@@ -44,27 +44,17 @@ Version: 1.0
 }
 /* FIN Import Font */
 
-p, a {
+.ht-container {
+    max-width: 100vw;
+    padding-left: 30px;
+}
+
+.ht-main-navigation, .ht-menu>ul>li>a, p {
     font-family: 'Syne', sans-serif;
     font-weight: 400;
 }
 
-/* A supprimer si pas de Title Bar */
-.ht-main-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-}
-/* A supprimer si pas de Title Bar */
-
 h1, h2, h3 {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-}
-
-h1 {
-    text-transform: uppercase;
-}
-
-.h2-title-other {
-    font-weight: 700;
 }
