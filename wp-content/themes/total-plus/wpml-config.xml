@@ -1,0 +1,102 @@
+<wpml-config>
+    <admin-texts>
+        <key name="theme_mods_total-plus">
+            <key name="total_plus_th_text" />
+            <key name="total_plus_hb_text" />
+            <key name="total_plus_hb_link" />
+            <key name="total_plus_banner_title" />
+            <key name="total_plus_banner_subtitle" />
+            <key name="total_plus_banner_button_text" />
+            <key name="total_plus_banner_button_link" />
+            <key name="total_plus_featured_super_title" />
+            <key name="total_plus_featured_title" />
+            <key name="total_plus_featured_sub_title" />
+            <key name="total_plus_featured_button_text" />
+            <key name="total_plus_featured_button_link" />
+            <key name="total_plus_highlight_super_title" />
+            <key name="total_plus_highlight_title" />
+            <key name="total_plus_highlight_sub_title" />
+            <key name="total_plus_highlight_button_text" />
+            <key name="total_plus_highlight_button_link" />
+            <key name="total_plus_service_super_title" />
+            <key name="total_plus_service_title" />
+            <key name="total_plus_service_sub_title" />
+            <key name="total_plus_service_button_text" />
+            <key name="total_plus_service_button_link" />
+            <key name="total_plus_portfolio_super_title" />
+            <key name="total_plus_portfolio_title" />
+            <key name="total_plus_portfolio_sub_title" />
+            <key name="total_plus_portfolio_button_text" />
+            <key name="total_plus_portfolio_button_link" />
+            <key name="total_plus_counter_super_title" />
+            <key name="total_plus_counter_title" />
+            <key name="total_plus_counter_sub_title" />
+            <key name="total_plus_counter_button_text" />
+            <key name="total_plus_counter_button_link" />
+            <key name="total_plus_team_super_title" />
+            <key name="total_plus_team_title" />
+            <key name="total_plus_team_sub_title" />
+            <key name="total_plus_team_button_text" />
+            <key name="total_plus_team_button_link" />
+            <key name="total_plus_testimonial_super_title" />
+            <key name="total_plus_testimonial_title" />
+            <key name="total_plus_testimonial_sub_title" />
+            <key name="total_plus_testimonial_button_text" />
+            <key name="total_plus_testimonial_button_link" />
+            <key name="total_plus_pricing_super_title" />
+            <key name="total_plus_pricing_title" />
+            <key name="total_plus_pricing_sub_title" />
+            <key name="total_plus_pricing_button_text" />
+            <key name="total_plus_pricing_button_link" />
+            <key name="total_plus_news_super_title" />
+            <key name="total_plus_news_title" />
+            <key name="total_plus_news_sub_title" />
+            <key name="total_plus_news_button_text" />
+            <key name="total_plus_news_button_link" />
+            <key name="total_plus_tab_super_title" />
+            <key name="total_plus_tab_title" />
+            <key name="total_plus_tab_sub_title" />
+            <key name="total_plus_tab_button_text" />
+            <key name="total_plus_tab_button_link" />
+            <key name="total_plus_blog_super_title" />
+            <key name="total_plus_blog_title" />
+            <key name="total_plus_blog_sub_title" />
+            <key name="total_plus_blog_button_text" />
+            <key name="total_plus_blog_button_link" />
+            <key name="total_plus_logo_super_title" />
+            <key name="total_plus_logo_title" />
+            <key name="total_plus_logo_sub_title" />
+            <key name="total_plus_logo_button_text" />
+            <key name="total_plus_logo_button_link" />
+            <key name="total_plus_cta_super_title" />
+            <key name="total_plus_cta_title" />
+            <key name="total_plus_cta_sub_title" />
+            <key name="total_plus_cta_button1_text" />
+            <key name="total_plus_cta_button1_link" />
+            <key name="total_plus_cta_button2_text" />
+            <key name="total_plus_cta_button2_link" />
+            <key name="total_plus_longitude" />
+            <key name="total_plus_latitude" />
+            <key name="total_plus_contact_detail" />
+            <key name="total_plus_customa_super_title" />
+            <key name="total_plus_customa_title" />
+            <key name="total_plus_customa_sub_title" />
+            <key name="total_plus_customb_super_title" />
+            <key name="total_plus_customb_title" />
+            <key name="total_plus_customb_sub_title" />
+            <key name="total_plus_archive_readmore" />
+            <key name="total_plus_footer_copyright" />
+            <key name="total_plus_gdpr_notice" />
+            <key name="total_plus_gdpr_confirm_button_text" />
+            <key name="total_plus_gdpr_button_text" />
+            <key name="total_plus_maintenance_title" />
+            <key name="total_plus_maintenance_text" />
+        </key>
+    </admin-texts>
+    <custom-types>
+        <custom-type translate="1">portfolio</custom-type>
+    </custom-types>
+    <taxonomies>
+        <taxonomy translate="1">portfolio_type</taxonomy>
+    </taxonomies> 
+</wpml-config>

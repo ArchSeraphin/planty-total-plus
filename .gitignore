@@ -1,0 +1,15 @@
+# WordPress uploads
+wp-content/uploads/
+
+# Cache et logs
+wp-content/cache/
+wp-content/upgrade/
+*.log
+
+# OS et éditeurs
+.DS_Store
+.idea/
+.vscode/
+
+# Clés de config sensibles
+wp-config.php

@@ -1,0 +1,439 @@
+@thumbnail_width: default;
+
+@thumbnail_hover_width: default;
+
+@thumbnail_overlay_hover_opacity: 0.5;
+@thumbnail_overlay_hover_color: #6e6e6e;
+@navigation_color: #2d2d2d;
+@navigation_color_hover: #f14e4e;
+@navigation_background: #bebebe;
+@navigation_hover_background: #f14e4e;
+
+@breakpoint_tablet_landscape: default;
+@breakpoint_tablet_portrait: default;
+@breakpoint_mobile: default;
+@navigation_desktop: default;
+@navigation_tablet_landscape: default;
+@navigation_tablet_portrait: default;
+@navigation_mobile: default;
+@item_title_tag: default;
+@item_title_font_size: 15px;
+@item_title_color: default;
+@item_title_color_hover: default;
+
+@navigation_navigation_color: default;
+@navigation_navigation_color_hover: default;
+@navigation_arrow_margin: default;
+
+@navigation_arrows: default;
+@desktop_slides_to_scroll: 1;
+@tablet_landscape_breakpoint: 1366px;
+@tablet_landscape_slides_to_scroll: 2;
+@tablet_portrait_breakpoint: 1025px;
+@tablet_portrait_slides_to_scroll: 2;
+@mobile_breakpoint: 480px;
+@mobile_slides_to_scroll: 1;
+@desktop_slides_to_show: 3;
+@tablet_landscape_slides_to_show: 3;
+@tablet_portrait_slides_to_show: 2;
+@mobile_slides_to_show: 1;
+
+// Theme.
+@title_font: default;
+@title_font_style: default;
+@title_font_weight: default;
+
+@thumbnail_overlay_color: default;
+
+@navigation_dots_color: default;
+@navigation_dots_color_hover: default;
+@navigation_dots_top_margin: '0px';
+@dots: default;
+@navigation_dots_desktop: default;
+@navigation_dots_tablet_landscape: default;
+@navigation_dots_tablet_portrait: default;
+@navigation_dots_mobile: default;
+
+@card_background_color: default;
+@card_border_radius: default;
+@card_shadow: default;
+@card_shadow_blur: '8px';
+@card_shadow_spread: '0px';
+@card_shadow_offset_vertical: '4px';
+@card_shadow_offset: default;
+@card_shadow_vertical_space: default;
+
+@card_content_container_padding: default;
+
+@card_post_meta_display: below_title;
+@card_post_meta_bottom_margin: default;
+
+@card_post_meta_category_font: default;
+@card_post_meta_category_font_style: default;
+@card_post_meta_category_font_weight: default;
+@card_post_meta_category_color: default;
+@card_post_meta_category_color_hover: default;
+@card_post_meta_category_size: default;
+
+@card_post_meta_date_font: default;
+@card_post_meta_date_font_style: default;
+@card_post_meta_date_font_weight: default;
+@card_post_meta_date_color: default;
+@card_post_meta_date_size: default;
+@card_post_meta_date_bottom_margin: default;
+
+@card_post_content_font: default;
+@card_post_content_font_style: default;
+@card_post_content_font_weight: default;
+@card_post_content_size: default;
+@card_post_content_color: default;
+
+@card_read_more_color: #f14e4e;
+@card_read_more_color_hover: #626262;
+@card_read_more_spacing_above: default;
+
+.sow-carousel-wrapper {
+	position: relative;
+
+	.sow-carousel-items {
+		// Add blur to the sides of the carousel to prevent hard edges.
+		backdrop-filter: blur(0.5px);
+		mask: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, #000 10px, #000 ~"calc(100% - 10px)", rgba(0, 0, 0, 0) 100%);
+
+		.slick-track .sow-carousel-item {
+			background: @card_background_color;
+			border-bottom-left-radius: @card_border_radius;
+			border-bottom-right-radius: @card_border_radius;
+			box-shadow: @card_shadow;
+			margin-inline: @card_shadow_offset;
+			margin-top: @card_shadow_vertical_space;
+
+			// Default margin-bottom is just the shadow space when no nav dots.
+			margin-bottom: ~"calc(@{card_shadow_vertical_space} + @{card_shadow_blur} + @{card_shadow_spread})";
+
+			& when (@dots = 1) and ( isnumber( @navigation_dots_desktop ) ) {
+				@media (min-width: @breakpoint_tablet_landscape) {
+					margin-bottom: ~"max(@{navigation_dots_top_margin}, @{card_shadow_vertical_space} + @{card_shadow_blur} + @{card_shadow_spread})";
+				}
+			}
+
+			& when (@dots = 1) and ( isnumber( @navigation_dots_tablet_landscape ) ) {
+				@media (min-width: @breakpoint_tablet_portrait) and (max-width: @breakpoint_tablet_landscape) {
+					margin-bottom: ~"max(@{navigation_dots_top_margin}, @{card_shadow_vertical_space} + @{card_shadow_blur} + @{card_shadow_spread})";
+				}
+			}
+
+			& when (@dots = 1) and ( isnumber( @navigation_dots_tablet_portrait ) ) {
+				@media (min-width: @breakpoint_mobile) and (max-width: @breakpoint_tablet_portrait) {
+					margin-bottom: ~"max(@{navigation_dots_top_margin}, @{card_shadow_vertical_space} + @{card_shadow_blur} + @{card_shadow_spread})";
+				}
+			}
+
+			& when (@dots = 1) and ( isnumber( @navigation_dots_mobile ) ) {
+				@media (max-width: @breakpoint_mobile) {
+					margin-bottom: ~"max(@{navigation_dots_top_margin}, @{card_shadow_vertical_space} + @{card_shadow_blur} + @{card_shadow_spread})";
+				}
+			}
+
+			// Prevent container background from appearing behind featured image.
+			&:has(.sow-carousel-item-image) {
+				border-top-left-radius: @card_border_radius * 2;
+				border-top-right-radius: @card_border_radius * 2;
+			}
+
+			&-inner {
+				padding: @card_content_container_padding;
+			}
+
+			&-image img {
+				border-top-left-radius: @card_border_radius;
+				border-top-right-radius: @card_border_radius;
+				width: 100%;
+			}
+
+			&:not(:has(.sow-carousel-item-image)) {
+				border-top-left-radius: @card_border_radius;
+				border-top-right-radius: @card_border_radius;
+			}
+
+			& when ( @card_post_meta_display = thumbnail ) {
+				&-link-overlay:hover,
+				&-link-overlay:focus-within {
+					.sow-carousel-item-image::before {
+						opacity: 1;
+					}
+
+					.sow-carousel-item-meta {
+						opacity: 1;
+					}
+				}
+			}
+
+			.sow-carousel-item-date {
+				color: @card_post_meta_date_color;
+				font-family: @card_post_meta_date_font;
+				font-size: @card_post_meta_date_size;
+				font-style: @card_post_meta_date_font_style;
+				font-weight: @card_post_meta_date_font_weight;
+
+				& when ( @card_post_meta_display = thumbnail ) {
+					margin-bottom: @card_post_meta_date_bottom_margin;
+				}
+			}
+
+			@{item_title_tag}.sow-carousel-item-title {
+				margin-block-end: 8px;
+				margin-block-start: 0;
+
+				&,
+				a {
+					font-style: @title_font_style;
+				}
+
+				a {
+					color: @item_title_color;
+					font-family: @title_font;
+					font-size: @item_title_font_size;
+					font-weight: @title_font_weight;
+					text-decoration: none;
+
+					&:hover,
+					&:focus {
+						color: @item_title_color_hover;
+					}
+				}
+			}
+
+			&-meta {
+				display: flex;
+				justify-content: space-between;
+				line-height: 1em;
+				margin-bottom: @card_post_meta_bottom_margin;
+
+				.sow-carousel-item-categories {
+					color: @card_post_meta_category_color;
+					display: flex;
+					margin: 0;
+					padding: 0;
+
+					a {
+						color: @card_post_meta_category_color;
+						font-family: @card_post_meta_category_font;
+						font-size: @card_post_meta_category_size;
+						font-style: @card_post_meta_category_font_style;
+						font-weight: @card_post_meta_category_font_weight;
+						text-decoration: none;
+
+						&:hover,
+						&:focus {
+							color: @card_post_meta_category_color_hover;
+						}
+					}
+				}
+			}
+
+			&-content {
+				color: @card_post_content_color;
+			}
+
+			&-content,
+			.sow-more-link {
+				font-family: @card_post_content_font;
+				font-size: @card_post_content_size;
+				font-style: @card_post_content_font_style;
+				font-weight: @card_post_content_font_weight;
+			}
+
+			.sow-more-link {
+				color: @card_read_more_color;
+				display: block;
+				font-size: 14px;
+				margin-top: 26px;
+				text-decoration: none;
+
+				&:focus,
+				&:hover {
+					color: @card_read_more_color_hover;
+				}
+			}
+
+			& when ( @card_post_meta_display = thumbnail ) {
+
+				.sow-carousel-item-image {
+					position: relative;
+
+					&::before {
+						background: @thumbnail_overlay_color;
+						border-top-left-radius: @card_border_radius;
+						border-top-right-radius: @card_border_radius;
+						bottom: 0;
+						content: '';
+						display: block;
+						left: 0;
+						opacity: 0;
+						position: absolute;
+						right: 0;
+						top: 0;
+						width: 100%;
+					}
+
+					&::before,
+					.sow-carousel-item-meta {
+						transition: 200ms opacity ease-in-out;
+					}
+
+					&:hover,
+					&:focus-within {
+						&::before {
+							opacity: 1;
+						}
+
+						.sow-carousel-item-meta {
+							opacity: 0.8;
+						}
+					}
+
+					img {
+						height: auto;
+					}
+
+					.sow-carousel-item-ima-thumbnail-overlay {
+						bottom: 0;
+						left: 0;
+						position: absolute;
+						right: 0;
+						top: 0;
+						z-index: -1;
+					}
+				}
+
+				.sow-carousel-item-meta {
+					align-items: center;
+					bottom: 0;
+					display: flex;
+					flex-direction: column;
+					gap: 12px;
+					justify-content: center;
+					left: 0;
+					opacity: 0;
+					position: absolute;
+					right: 0;
+					top: 0;
+					z-index: 1;
+				}
+			}
+
+			& when ( @card_post_meta_display = below ) {
+				.sow-carousel-item-meta {
+
+					.sow-carousel-item-date {
+						flex: 2;
+					}
+
+					.sow-carousel-item-categories {
+						flex: 1;
+					}
+				}
+
+			}
+		}
+	}
+
+	.slick-dots {
+
+		& when not ( isnumber( @navigation_dots_desktop ) ) {
+			@media (min-width: @breakpoint_tablet_landscape) {
+				display: none !important;
+			}
+		}
+
+		& when not ( isnumber( @navigation_dots_tablet_landscape ) ) {
+			@media (min-width: @breakpoint_tablet_portrait) and (max-width: @breakpoint_tablet_landscape) {
+				display: none !important;
+			}
+		}
+
+		& when not ( isnumber( @navigation_dots_tablet_portrait ) ) {
+			@media (min-width: @breakpoint_mobile) and (max-width: @breakpoint_tablet_portrait) {
+				display: none !important;
+			}
+		}
+
+		& when not ( isnumber( @navigation_dots_mobile ) ) {
+			@media (max-width: @breakpoint_mobile) {
+				display: none !important;
+			}
+		}
+
+		li {
+			&.slick-active button {
+				background: @navigation_dots_color_hover;
+			}
+
+			button {
+				background: @navigation_dots_color;
+
+				&:hover,
+				&:focus {
+					background: @navigation_dots_color_hover;
+				}
+			}
+		}
+	}
+}
+
+.sow-carousel-navigation {
+
+	& when not ( isnumber( @navigation_desktop ) ) {
+		@media (min-width: @breakpoint_tablet_landscape) {
+			display: none;
+		}
+	}
+
+	& when not ( isnumber( @navigation_tablet_landscape ) ) {
+		@media (min-width: @breakpoint_tablet_portrait) and (max-width: @breakpoint_tablet_landscape) {
+			display: none;
+		}
+	}
+
+	& when not ( isnumber( @navigation_tablet_portrait ) ) {
+		@media (min-width: @breakpoint_mobile) and (max-width: @breakpoint_tablet_portrait) {
+			display: none;
+		}
+	}
+
+	& when not ( isnumber( @navigation_mobile ) ) {
+		@media (max-width: @breakpoint_mobile) {
+			display: none;
+		}
+	}
+
+	a.sow-carousel-next,
+	a.sow-carousel-previous {
+		color: @navigation_color;
+
+		&:focus,
+		&:hover {
+			color: @navigation_color_hover;
+		}
+	}
+
+}
+
+& when( @navigation_arrows = 1 ) {
+	.sow-carousel-nav,
+	.sow-carousel-nav-arrows {
+		display: flex;
+		flex-direction: row-reverse;
+		justify-content: space-between;
+
+		body.rtl & {
+			flex-direction: row;
+		}
+
+		// Prevent potential misalignment of dots when resizing.
+		.slick-dots {
+			display: flex !important;
+		}
+	}
+}
