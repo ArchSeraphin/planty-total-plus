@@ -40,8 +40,8 @@ class SiteOrigin_Premium_Plugin_404_Page extends SiteOrigin_Premium_Central_Gate
 			<p><strong>Here's what you can do:</strong></p>
 			<ul>
 				<li>Go Back: Use your browser's back button to return to the previous page.</li>
-				<li>Home Sweet Home: Visit our <a href=''>Home page</a> to start fresh.</li>
-				<li>Help: Need assistance? Our <a href=''>Support Team</a> is here to help you.</li>
+				<li>Home Sweet Home: Visit our Home page to start fresh.</li>
+				<li>Help: Need assistance? Our Support Team is here to help you.</li>
 			</ul>
 			<p>We're sorry for any inconvenience. Sometimes links get broken or pages get moved. But there's plenty more to explore. Let's get you back to finding what you were looking for.</p>",
 			'siteorigin-premium'

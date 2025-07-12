@@ -4,20 +4,32 @@ class SiteOrigin_Premium_Central_Gate {
 	public $settings;
 	public $is_panels;
 	public $content;
+	public $status_code;
+
+	public function load_pb_front_css() {
+		?>
+		<link rel='stylesheet' id='siteorigin-panels-css' href='<?php echo esc_url( SiteOrigin_Panels::front_css_url() ); ?>' type='text/css' media='all' />
+		<?php
+		SiteOrigin_Panels_Styles::register_scripts();
+	}
 
 	public function add_gate_layout_builder_css() {
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo SiteOrigin_Panels::renderer()->generate_css( 'wGateAddon', $this->settings['content_layout'] );
 	}
 
 	public function add_gate_content() {
-		if ( ! empty( $this->is_panels ) ) {
-			if ( ! class_exists( 'SiteOrigin_Panels' ) ) {
-				esc_html_e( 'SiteOrigin Page Builder is required for this content to output.', 'siteorigin-premium' );
-			}
-			echo $this->content;
-		} else {
-			echo apply_filters( 'the_content', $this->content );
+		if ( empty( $this->is_panels ) ) {
+			echo wp_kses_post( apply_filters( 'the_content', $this->content ) );
+			return;
 		}
+
+		if ( ! class_exists( 'SiteOrigin_Panels' ) ) {
+			esc_html_e( 'SiteOrigin Page Builder is required for this content to output.', 'siteorigin-premium' );
+		}
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $this->content;
 	}
 
 	public function form_options( $page = false ) {
@@ -112,12 +124,13 @@ class SiteOrigin_Premium_Central_Gate {
 			'fields' => array(
 				'body' => array(
 					'type' => 'section',
+					'collapsed' => true,
 					'label' => __( 'Body', 'siteorigin-premium' ),
 					'fields' => array(
 						'background_color' => array(
 							'type' => 'color',
 							'label' => __( 'Background Color', 'siteorigin-premium' ),
-							'default' => '#fbfbfb',
+							'default' => '#ffffff',
 						),
 						'background_image' => array(
 							'type' => 'media',
@@ -145,12 +158,13 @@ class SiteOrigin_Premium_Central_Gate {
 				),
 				'container' => array(
 					'type' => 'section',
+					'collapsed' => true,
 					'label' => __( 'Content Container', 'siteorigin-premium' ),
 					'fields' => array(
 						'margin' => array(
 							'type' => 'multi-measurement',
 							'label' => __( 'Margin', 'siteorigin-premium' ),
-							'default' => '0px 0px 0px 0px',
+							'default' => '30px 0px 0px 0px',
 							'measurements' => array(
 								'top' => __( 'Top', 'siteorigin-premium' ),
 								'right' => __( 'Right', 'siteorigin-premium' ),
@@ -161,7 +175,7 @@ class SiteOrigin_Premium_Central_Gate {
 						'border_radius' => array(
 							'type' => 'multi-measurement',
 							'label' => __( 'Border Radius', 'siteorigin-premium' ),
-							'default' => '0px 0px 0px 0px',
+							'default' => '16px 16px 16px 16px',
 							'measurements' => array(
 								'top' => __( 'Top', 'siteorigin-premium' ),
 								'right' => __( 'Right', 'siteorigin-premium' ),
@@ -172,11 +186,12 @@ class SiteOrigin_Premium_Central_Gate {
 						'background_color' => array(
 							'type' => 'color',
 							'label' => __( 'Background', 'siteorigin-premium' ),
+							'default' => '#ffffff',
 						),
 						'padding' => array(
 							'type' => 'multi-measurement',
 							'label' => __( 'Padding', 'siteorigin-premium' ),
-							'default' => '30px 25px 30px 25px',
+							'default' => '35px 40px 20px 40px',
 							'measurements' => array(
 								'top' => __( 'Top', 'siteorigin-premium' ),
 								'right' => __( 'Right', 'siteorigin-premium' ),
@@ -203,6 +218,7 @@ class SiteOrigin_Premium_Central_Gate {
 				),
 				'heading' => array(
 					'type' => 'section',
+					'collapsed' => true,
 					'label' => __( 'Heading', 'siteorigin-premium' ),
 					'fields' => array(
 						'font' => array(
@@ -224,6 +240,7 @@ class SiteOrigin_Premium_Central_Gate {
 				),
 				'text' => array(
 					'type' => 'section',
+					'collapsed' => true,
 					'label' => __( 'Text', 'siteorigin-premium' ),
 					'fields' => array(
 						'font' => array(
@@ -234,7 +251,7 @@ class SiteOrigin_Premium_Central_Gate {
 						'size' => array(
 							'type' => 'measurement',
 							'label' => __( 'Font Size', 'siteorigin-premium' ),
-							'default' => '17px',
+							'default' => '16px',
 						),
 						'color' => array(
 							'type' => 'color',
@@ -253,6 +270,53 @@ class SiteOrigin_Premium_Central_Gate {
 				),
 			),
 		);
+
+		// If WB has the Toggle field present, add a Box Shadow content container setting.
+		if ( class_exists( 'SiteOrigin_Widget_Field_Toggle' ) ) {
+			siteorigin_widgets_array_insert(
+				$form_options['design']['fields']['container']['fields'],
+				'border_radius',
+				array(
+					'box_shadow' => array(
+						'type' => 'toggle',
+						'label' => __( 'Box Shadow', 'siteorigin-premium' ),
+						'default' => false,
+						'state_handler' => array(
+							'content_type[layout,text]' => array( 'show' ),
+							'_else[content_type]' => array( 'hide' ),
+						),
+						'fields' => array(
+							'color' => array(
+								'type' => 'color',
+								'label' => __( 'Color', 'siteorigin-premium' ),
+								'default' => 'rgba(0, 0, 0, 0.07)',
+								'alpha' => true,
+							),
+							'offset_horizontal' => array(
+								'type' => 'measurement',
+								'label' => __( 'Horizontal Offset', 'siteorigin-premium' ),
+								'default' => 0,
+							),
+							'offset_vertical' => array(
+								'type' => 'measurement',
+								'label' => __( 'Vertical Offset', 'siteorigin-premium' ),
+								'default' => '2px',
+							),
+							'blur' => array(
+								'type' => 'measurement',
+								'label' => __( 'Blur', 'siteorigin-premium' ),
+								'default' => '12px',
+							),
+							'spread' => array(
+								'type' => 'measurement',
+								'label' => __( 'Spread', 'siteorigin-premium' ),
+								'default' => 0,
+							),
+						),
+					),
+				)
+			);
+		}
 
 		return $form_options;
 	}
@@ -289,13 +353,60 @@ class SiteOrigin_Premium_Central_Gate {
 			return false;
 		}
 
+		if ( ! empty( $this->status_code ) ) {
+			status_header( $this->status_code );
+		}
+
 		$force_gate = $force_gate ? $force_gate : in_array( $this->settings['content_type'], array( 'layout', 'text' ) );
+
 
 		if ( $force_gate ) {
 			$this->render_gate( $force_gate );
-		} else {
-			$this->render_page();
 		}
+
+		$this->render_page();
+		return true;
+	}
+
+
+	/**
+	 * Format font family CSS properly with quotes around each individual font name.
+	 *
+	 * @param array $font Font settings array.
+	 *
+	 * @return string Formatted font-family CSS declaration.
+	 */
+	private function output_font_family( $font ) : string {
+		if ( empty( $font['family'] ) ) {
+			return '';
+		}
+
+		// Split the font family string by commas.
+		$font_families = explode( ',', $font['family'] );
+		$formatted_fonts = array();
+
+		foreach ( $font_families as $family ) {
+			$family = trim( $family );
+
+			// Skip empty values
+			if ( empty( $family ) ) {
+				continue;
+			}
+
+			$family = sanitize_text_field( $family );
+
+			// Only add quotes if they don't already exist.
+			if ( strpos( $family, '"' ) === false && strpos( $family, "'" ) === false ) {
+				$family = '"' . $family . '"';
+			}
+
+			$formatted_fonts[] = $family;
+		}
+
+		// Join the formatted font families back with commas.
+		$formatted_family = implode( ', ', $formatted_fonts );
+
+		return "font-family: $formatted_family;";
 	}
 
 	private function prepare_gate_content() {
@@ -341,6 +452,24 @@ class SiteOrigin_Premium_Central_Gate {
 		return false;
 	}
 
+	/**
+	 * Generate the box shadow CSS.
+	 *
+	 * @param array $settings The settings array.
+	 * @param string $setting The setting name.
+	 *
+	 * @return string The box shadow CSS.
+	 */
+	private static function generate_shadow( $settings, $setting = '' ): string {
+		$box_shadow_offset_horizontal = ! empty( $settings['offset_horizontal'] ) ? $settings['offset_horizontal'] : '0';
+		$box_shadow_offset_vertical = ! empty( $settings['offset_vertical'] ) ? $settings['offset_vertical'] : '2px';
+		$box_shadow_blur = ! empty( $settings['blur'] ) ? $settings['blur'] : '12px';
+		$box_shadow_spread = ! empty( $settings['spread'] ) ? $settings['spread'] : '';
+		$box_shadow_color = isset( $settings['color'] ) ? $settings['color'] : 'rgba(0, 0, 0, 0.07)';
+
+		return "$box_shadow_offset_horizontal $box_shadow_offset_vertical $box_shadow_blur $box_shadow_spread $box_shadow_color";
+	}
+
 	private function render_gate( $force_gate = false ) {
 		$this->prepare_gate_content();
 
@@ -353,13 +482,22 @@ class SiteOrigin_Premium_Central_Gate {
 			$this->settings['title'] = $this->default_title();
 		}
 
-		if ( ! empty( $this->is_panels ) ) {
+		if ( $this->is_panels === true ) {
+			add_action( 'siteorigin_premium_gate_head', array( $this, 'load_pb_front_css' ) );
 			add_action( 'siteorigin_premium_gate_css', array( $this, 'add_gate_layout_builder_css' ) );
 		}
 
 		add_action( 'siteorigin_premium_gate_content', array( $this, 'add_gate_content' ) );
 
+		if (
+			class_exists( 'SiteOrigin_Widget_Field_Toggle' ) &&
+			! empty( $this->settings['design']['container']['box_shadow']['so_field_container_state'] )
+		) {
+			$box_shadow = self::generate_shadow( $this->settings['design']['container']['box_shadow'], 'shadow' );
+		}
+
 		include SITEORIGIN_PREMIUM_DIR . 'tpl/gate.php';
+		die();
 	}
 
 	public function render_page() {

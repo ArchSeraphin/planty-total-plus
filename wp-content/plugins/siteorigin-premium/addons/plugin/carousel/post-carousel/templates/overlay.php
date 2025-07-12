@@ -10,9 +10,13 @@ while ( $settings['posts']->have_posts() ) {
 	);
 	?>
 	<div
-		class="sow-carousel-item <?php if ( has_post_thumbnail() || ! empty( $settings['default_thumbnail'] ) ) {
+		class="sow-carousel-item 
+		<?php
+		if ( has_post_thumbnail() || ! empty( $settings['default_thumbnail'] ) ) {
 			echo 'sow-carousel-default-thumbnail';
-		} ?>"
+		}
+		?>
+		"
 		style="
 			<?php echo ! empty( $img ) ? 'background-image: url(' . sow_esc_url( $img[0] ) . ');' : ''; ?>
 			<?php echo ! empty( $height ) ? "$height;" : ''; ?>
@@ -43,6 +47,6 @@ while ( $settings['posts']->have_posts() ) {
 			<?php echo esc_html( get_the_title() ); ?>
 		</<?php echo esc_attr( $tag ); ?>>
 	</div>
-<?php
+	<?php
 }
 wp_reset_postdata();

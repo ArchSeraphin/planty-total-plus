@@ -86,7 +86,7 @@ class SiteOrigin_Premium_Plugin_Parallax_Sliders {
 
 		if ( $background['image-sizing'] == 'parallax' ) {
 			if ( SiteOrigin_Premium::single()->use_new_parallax() ) {
-				unset( $attributes['style'] );
+				return array();
 			} else {
 				if ( empty( $background['image-width'] ) || empty( $background['image-height'] ) ) {
 					return $attributes;

@@ -73,7 +73,6 @@
   content: none;
 }
 .sow-post-carousel-theme-cards .sow-carousel-item {
-  height: auto;
   position: relative;
 }
 .sow-post-carousel-theme-cards .sow-carousel-item .sow-carousel-overlay {
@@ -91,6 +90,7 @@
 }
 .sow-post-carousel-theme-cards .slick-dots {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
   line-height: 0;

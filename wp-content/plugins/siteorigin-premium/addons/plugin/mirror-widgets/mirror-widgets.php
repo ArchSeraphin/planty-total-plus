@@ -9,14 +9,14 @@ License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.txt
 Documentation: https://siteorigin.com/premium-documentation/plugin-addons/mirror-widgets/
 Tags: Page Builder, Widgets Bundle
-Requires: siteorigin-panels, so-widgets-bundle
+Requires: siteorigin-panels
 */
 
 class SiteOrigin_Premium_Plugin_Mirror_Widgets {
 	const POST_TYPE = 'so_mirror_widget';
 
 	public function __construct() {
-		if ( ! ( class_exists( 'SiteOrigin_Widgets_Bundle' ) && class_exists( 'SiteOrigin_Panels' ) ) ) {
+		if ( ! class_exists( 'SiteOrigin_Panels' ) ) {
 			return;
 		}
 
@@ -37,15 +37,18 @@ class SiteOrigin_Premium_Plugin_Mirror_Widgets {
 
 		add_filter( 'siteorigin_panels_builder_supports', array( $this, 'builder_supports' ), 10, 3 );
 
-		add_filter( 'siteorigin_widgets_widget_folders', array( $this, 'add_mirror_widget' ) );
-		add_action( 'after_setup_theme', array( $this, 'activate_mirror_widget' ), 12 );
-
-		add_filter( 'siteorigin_panels_widgets', array( $this, 'remove_mirror_widget' ) );
-
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 
 		add_action( 'admin_print_scripts-post-new.php', array( $this, 'enqueue_admin_scripts' ) );
 		add_action( 'admin_print_scripts-post.php', array( $this, 'enqueue_admin_scripts' ) );
+
+		if ( ! class_exists( 'SiteOrigin_Widgets_Bundle' ) ) {
+			return;
+		}
+
+		add_filter( 'siteorigin_widgets_widget_folders', array( $this, 'add_mirror_widget' ) );
+		add_action( 'after_setup_theme', array( $this, 'activate_mirror_widget' ), 12 );
+		add_filter( 'siteorigin_panels_widgets', array( $this, 'remove_mirror_widget' ) );
 
 		add_filter( 'siteorigin_widgets_block_exclude_widget', array( $this, 'exclude_from_widgets_block_cache' ), 10, 2 );
 	}
@@ -65,6 +68,8 @@ class SiteOrigin_Premium_Plugin_Mirror_Widgets {
 	 * Register the Mirror Widget post type.
 	 */
 	public function register_post_type() {
+		$svg = file_get_contents( plugin_dir_path( __FILE__ ) . 'assets/menu-icon.svg' );
+
 		register_post_type( self::POST_TYPE, array(
 			'labels' => array(
 				'singular_name' => __( 'Mirror Widget', 'siteorigin-premium' ),
@@ -72,14 +77,16 @@ class SiteOrigin_Premium_Plugin_Mirror_Widgets {
 				'edit_item' => __( 'Edit Mirror Widget', 'siteorigin-premium' ),
 			),
 			'description' => __( 'A widget which can be used anywhere, with all changes to the widget reflected wherever the widget is used.', 'siteorigin-premium' ),
-			'public' => true,
+			'public' => false,
+			'show_ui' => true,
+			'show_in_menu' => true,
 			'publicly_queryable' => isset( $_GET['_panelsnonce'] ) || is_admin(),
-			'rewrite' => array( 'slug' => 'mirror-widget' ), // This is purely so it looks better when editing.
+			'rewrite' => false,
 			'exclude_from_search' => true,
 			'show_in_nav_menus' => false,
 			'show_in_admin_bar' => false,
 			'show_in_rest' => false,
-			'menu_icon' => SiteOrigin_Premium::dir_url( __FILE__ ) . './assets/menu-icon.svg',
+			'menu_icon' => 'data:image/svg+xml;base64,' . base64_encode( $svg ),
 			'supports' => array( 'title', 'editor', 'revisions', 'thumbnail' ),
 		) );
 	}
@@ -160,7 +167,6 @@ class SiteOrigin_Premium_Plugin_Mirror_Widgets {
 
 		return $settings;
 	}
-
 
 	/**
 	 * Remove the Mirror Widgets post type From the Page Builder selectable post type list.
@@ -253,7 +259,7 @@ class SiteOrigin_Premium_Plugin_Mirror_Widgets {
 			$mirror_widgets[ $mirror_widget->post_name ] = $name;
 		}
 
-		return $mirror_widgets;
+		return apply_filters( 'siteorigin_premium_mirror_widget_names', $mirror_widgets );
 	}
 
 	public static function render_mirror_widget( $mirror_widget_name, $is_preview ) {
@@ -297,6 +303,11 @@ class SiteOrigin_Premium_Plugin_Mirror_Widgets {
 
 		if ( $is_mirror_post_type && ! empty( $widgets['SiteOrigin_Premium_Widget_Mirror_Widget'] ) ) {
 			unset( $widgets['SiteOrigin_Premium_Widget_Mirror_Widget'] );
+		}
+
+		// Regardless of whether it's being removed, ensure the Mirror Widget is activated.
+		if ( empty( $widgets['SiteOrigin_Premium_Widget_Mirror_Widget'] ) ) {
+			$this->activate_mirror_widget();
 		}
 
 		return $widgets;

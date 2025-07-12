@@ -52,7 +52,7 @@
 
 	<div class="siteorigin-logo">
 		<p>
-			<?php esc_html_e( 'Proudly Created By', 'siteorigin' ); ?>
+			<?php esc_html_e( 'Proudly Created By', 'siteorigin-premium' ); ?>
 		</p>
 		<a href="https://siteorigin.com/" target="_blank" rel="noopener noreferrer">
 			<img src="<?php echo SiteOrigin_Premium::dir_url( __FILE__ ); ?>../img/siteorigin.png" />

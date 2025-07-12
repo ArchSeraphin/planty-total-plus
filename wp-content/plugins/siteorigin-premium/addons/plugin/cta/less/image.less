@@ -44,15 +44,10 @@
 
 	& when not ( @background_display = background ) {
 		display: flex;
+		justify-content: space-between;
 
 		& when ( @background_display = left ) {
 			flex-direction: row-reverse;
-		}
-
-		.siteorigin-premium-cta-image {
-			height: auto;
-			max-width: 100%;
-			overflow: hidden;
 		}
 
 		@media (min-width: @responsive_breakpoint) {
@@ -67,21 +62,41 @@
 			& when ( @content_align = end ) {
 				align-items: flex-end;
 			}
+		}
 
-			& when ( @button_align = top ),
-			( @button_align = bottom ) {
-				justify-content: center;
-			}
+		.siteorigin-premium-cta-image {
+			height: auto;
+			max-width: 100%;
+			overflow: hidden;
+		}
 
-			& when ( @button_align = left ) {
-				flex-direction: row;
-			}
+		& when ( @background_display = right ) {
+			flex-direction: row;
+		}
 
-			& when ( @button_align = right ) {
-				flex-direction: row-reverse;
-			}
+		.sow-cta-wrapper {
+			display: flex;
+			gap: @gutter;
 
-			.sow-cta-wrapper {
+			@media (min-width: @responsive_breakpoint) {
+				& when ( @button_align = top ) {
+					flex-direction: column-reverse;
+					justify-content: center;
+				}
+
+				& when ( @button_align = bottom ) {
+					flex-direction: column;
+					justify-content: center;
+				}
+
+				& when ( @button_align = left ) {
+					flex-direction: row-reverse;
+				}
+
+				& when ( @button_align = right ) {
+					flex-direction: row;
+				}
+
 				& when ( @background_display = right ) {
 					margin-right: 2px;
 				}
@@ -90,29 +105,36 @@
 					margin-left: 2px;
 				}
 			}
-		}
 
-		@media (max-width: @responsive_breakpoint) {
-			flex-direction: column-reverse;
+			@media (max-width: @responsive_breakpoint) {
 
-			// No mobile alignment.
-			& when ( @button_align_mobile = default ) {
-				// Center if the desktop alignment isn't left or right.
-				& when not ( @button_align = left ),
-				( @button_align = right ) {
+				// No mobile alignment.
+				& when ( @button_align_mobile = default ) {
+					// Center if the desktop alignment isn't left or right.
+					& when not ( @button_align = left ),
+					( @button_align = right ) {
+						.siteorigin-premium-cta-image {
+							margin-inline: auto;
+						}
+					}
+				}
+
+				// Mobile alignment.
+				& when ( @button_align_mobile = above ),
+				( @button_align_mobile = below ) {
+					justify-content: center;
+
 					.siteorigin-premium-cta-image {
 						margin-inline: auto;
 					}
-				}
-			}
 
-			// Mobile alignment.
-			& when ( @button_align_mobile = above ),
-			( @button_align_mobile = below ) {
-				justify-content: center;
+					& when ( @button_align_mobile = above ) {
+						flex-direction: column-reverse;
+					}
 
-				.siteorigin-premium-cta-image {
-					margin-inline: auto;
+					& when ( @button_align_mobile = below ) {
+						flex-direction: column;
+					}
 				}
 			}
 		}

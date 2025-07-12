@@ -56,7 +56,7 @@ if (!function_exists('total_plus_entry_category')) :
 
     function total_plus_entry_category() {
         $categories_list = get_the_category_list(', ');
-        if ($categories_list && total_plus_categorized_blog()) {
+        if ($categories_list) {
             echo '<span class="entry-categories">';
             echo '<i class="icofont-folder"></i>' . $categories_list;
             echo '</span>';
@@ -69,7 +69,7 @@ if (!function_exists('total_plus_entry_tag')) :
 
     function total_plus_entry_tag() {
         $tags_list = get_the_tag_list('<i class="icofont-book-mark"></i>', ', ');
-        if ($tags_list && total_plus_categorized_blog()) {
+        if ($tags_list) {
             echo '<span class="entry-tags">';
             echo $tags_list;
             echo '</span>';
@@ -178,47 +178,3 @@ function total_plus_single_social_share() {
     </div>
     <?php
 }
-
-/**
- * Returns true if a blog has more than 1 category.
- *
- * @return bool
- */
-function total_plus_categorized_blog() {
-    if (false === ( $all_the_cool_cats = get_transient('total_plus_categories') )) {
-        // Create an array of all the categories that are attached to posts.
-        $all_the_cool_cats = get_categories(array(
-            'fields' => 'ids',
-            'hide_empty' => 1,
-            // We only need to know if there is more than one category.
-            'number' => 2,
-        ));
-
-        // Count the number of categories that are attached to the posts.
-        $all_the_cool_cats = count($all_the_cool_cats);
-
-        set_transient('total_plus_categories', $all_the_cool_cats);
-    }
-
-    if ($all_the_cool_cats > 1) {
-        // This blog has more than 1 category so total_plus_categorized_blog should return true.
-        return true;
-    } else {
-        // This blog has only 1 category so total_plus_categorized_blog should return false.
-        return false;
-    }
-}
-
-/**
- * Flush out the transients used in total_plus_categorized_blog.
- */
-function total_plus_category_transient_flusher() {
-    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-        return;
-    }
-    // Like, beat it. Dig?
-    delete_transient('total_plus_categories');
-}
-
-add_action('edit_category', 'total_plus_category_transient_flusher');
-add_action('save_post', 'total_plus_category_transient_flusher');

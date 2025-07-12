@@ -1,37 +1,13 @@
-.so-widget-sow-contact-form {
-  .sow-field-container {
-    .datepicker-container {
-      input {
-        width: 100%;
-      }
-      
-      &.half-width {
-        width: 49%;
-        display: inline-block;
-        float: left;
-      }
-      
-    }
-    
-    .timepicker-container {
-      input {
-        width: 100%;
-      }
-      
-      .half-width {
-        width: 49%;
-        display: inline-block;
-        float: right;
-      }
-    
-      input {
-        width: 100%;
-      }
-    }
-    
-    .pika-single {
-      display: inline-block;
-      margin-top: 10px;
-    }
+.so-widget-sow-contact-form .sow-field-container {
+
+  &:has(.half-width) {
+    display: grid !important;
+    gap: 2%;
+    grid-template-columns: 1fr 1fr;
+  }
+
+ .pika-single {
+    display: inline-block;
+    margin-top: 10px;
   }
 }

@@ -5,7 +5,7 @@ Tags: two-columns, right-sidebar, custom-background, custom-menu, editor-style, 
 
 Requires at least: 6.0
 Tested up to: 6.7
-Stable tag: 1.6.5
+Stable tag: 1.6.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,10 +25,13 @@ TotalPlus is a clean and beautiful WordPress theme with lots of features to make
 
 
 == Changelog ==
+= 1.6.6 - Jun 24, 2025 =
+* Translation warning message - Fixed
+
 = 1.6.5 - Feb 26, 2025 =
 * Font Icons Updated
 * Automatic Update refinement
-* Customizer Font Icon control speed optmization
+* Customizer Font Icon control speed optimization
 
 = 1.6.4 - Feb 13, 2025 =
 * Home page sections tab not opening in customizer panel - Fixed

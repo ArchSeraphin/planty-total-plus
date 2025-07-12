@@ -255,10 +255,14 @@ class SiteOrigin_Premium_Plugin_Map_Styles {
 			! empty( $global_settings['map_consent'] ) &&
 			! empty( $global_settings['map_consent_design']['background'] )
 		) {
-			$consent_background_image = siteorigin_widgets_get_attachment_image_src(
+			$fallback_consent_image = isset( $global_settings['map_consent_design']['background']['image_fallback']) ?
+				$global_settings['map_consent_design']['background']['image_fallback'] :
+				false;
+
+			$consent_background_image =  siteorigin_widgets_get_attachment_image_src(
 				$global_settings['map_consent_design']['background']['image'],
 				'full',
-				$global_settings['map_consent_design']['background']['image_fallback']
+				$fallback_consent_image
 			);
 
 			if ( ! empty( $consent_background_image ) ) {

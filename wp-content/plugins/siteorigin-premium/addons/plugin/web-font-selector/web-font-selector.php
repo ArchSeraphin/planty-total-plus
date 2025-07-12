@@ -50,7 +50,7 @@ class SiteOrigin_Premium_Plugin_Web_Font_Selector {
 			}
 		}
 
-		return $fonts;
+		return apply_filters( 'siteorigin_premium_modify_fonts', $fonts );
 	}
 
 	public function modify_font_controls( $controls ) {

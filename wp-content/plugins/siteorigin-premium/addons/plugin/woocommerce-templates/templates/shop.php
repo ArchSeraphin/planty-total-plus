@@ -4,6 +4,9 @@ defined( 'ABSPATH' ) || exit;
 
 get_header( 'shop' );
 
+
+do_action( 'siteorigin_premium_wctb_template_before', 'shop' );
+
 do_action( 'woocommerce_before_main_content' );
 ?>
 	<header class="woocommerce-products-header">
@@ -33,3 +36,5 @@ do_action( 'woocommerce_after_main_content' );
 do_action( 'woocommerce_sidebar' );
 
 get_footer( 'shop' );
+
+do_action( 'siteorigin_premium_wctb_template_after', 'shop' );

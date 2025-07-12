@@ -8,6 +8,14 @@ jQuery( function( $ ) {
 
 	const $tabWithAnchor = $( '.so-widget-sow-tabs[data-anchor-id], .so-widget-sow-tabs:not([data-anchor-id]):has(.sow-tabs-tab[data-anchor-id])' );
 
+	// Ensure Stretched PB rows display correctly on load, and after opening.
+	// This is required here because of us overriding the default behavior of the Tabs widget.
+	const triggerResizeTimeout = ( time = 250 ) => {
+		setTimeout( function() {
+			$( window ).trigger( 'resize' );
+		}, time );
+	};
+
 	// On load, open any tabs that are in the hash.
 	$tabWithAnchor.each( async function() {
 		const $$ = $( this );
@@ -31,6 +39,9 @@ jQuery( function( $ ) {
 					setTimeout( function() {
 						initialSetup = false;
 					}, 200 );
+
+					triggerResizeTimeout();
+
 					break;
 				}
 			}
@@ -51,6 +62,8 @@ jQuery( function( $ ) {
 		}, 100 );
 
 		$$.find( '> .sow-tabs > .sow-tabs-tab-container .sow-tabs-tab[data-anchor-id="' + anchor + '"]' ).trigger( 'click' );
+
+		triggerResizeTimeout();
 	} );
 
 	// Handle external hash changes.
@@ -61,6 +74,8 @@ jQuery( function( $ ) {
 		}, 100 );
 
 		$( this ).find( '> .sow-tabs > .sow-tabs-tab-container .sow-tabs-tab[data-anchor-id="' + anchor + '"]' ).trigger( 'click' );
+
+		triggerResizeTimeout();
 	} );
 
 	$tabWithAnchor.on( 'tab_change', function( e, $tab, $widget ) {
@@ -90,11 +105,15 @@ jQuery( function( $ ) {
 				tabAnchorId,
 				tabAnchorId
 			);
+
+			triggerResizeTimeout();
 			return;
 		}
 
 		const tabsAnchorId = $widget.data( 'anchor-id' );
 		soPremium.anchorIds().update( tabsAnchorId, tabAnchorId );
+
+		triggerResizeTimeout();
 	} );
 } );
 

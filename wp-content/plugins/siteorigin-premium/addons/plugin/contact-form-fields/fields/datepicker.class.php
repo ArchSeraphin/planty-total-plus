@@ -40,6 +40,29 @@ class SiteOrigin_Widget_ContactForm_Field_Datepicker extends SiteOrigin_Widget_C
 		);
 	}
 
+	/**
+	 * Handle custom attributes for fields with version compatibility.
+	 *
+	 * Checks if add_custom_attrs method exists and supports options
+	 * parameter. Uses reflection to determine method signature for
+	 * backwards compatibility.
+	 *
+	 * @param string $type The field type.
+	 * @param array $options Optional. Custom attributes to add
+	 */
+	private function handle_custom_attrs( $type, $options ) {
+		if ( ! method_exists( $this, 'add_custom_attrs' ) ) {
+			return;
+		}
+
+		$ref = new ReflectionMethod( __CLASS__, 'add_custom_attrs' );
+		if ( $ref->getNumberOfParameters() > 1 ) {
+			echo self::add_custom_attrs( $type, $options );
+		} else {
+			echo self::add_custom_attrs( $type );
+		}
+	}
+
 	protected function render_field( $options ) {
 		$datetime_options = $options['field']['datetime_options'];
 		$field_id = $options['field_id'];
@@ -145,7 +168,8 @@ class SiteOrigin_Widget_ContactForm_Field_Datepicker extends SiteOrigin_Widget_C
 					class="so-premium-datepicker sow-text-field"
 					data-options="<?php echo esc_attr( wp_json_encode( $datepicker_options ) ); ?>"
 					autocomplete="off"
-					<?php method_exists( $this, 'add_custom_attrs' ) ? self::add_custom_attrs( 'datepicker' ) : ''; ?>
+					data-prefill="<?php echo esc_attr( isset( $datetime_options['datepicker_prefill'] ) ? $datetime_options['datepicker_prefill'] : false ); ?>"
+					<?php $this->handle_custom_attrs( 'datepicker', $options ); ?>
 				/>
 			</div>
 			<?php
@@ -173,7 +197,7 @@ class SiteOrigin_Widget_ContactForm_Field_Datepicker extends SiteOrigin_Widget_C
 					class="so-premium-timepicker<?php echo ' ' . sanitize_html_class( $width_class ); ?> sow-text-field"
 					data-options="<?php echo esc_attr( wp_json_encode( $timepicker_options ) ); ?>"
 					data-prefill="<?php echo esc_attr( isset( $datetime_options['timepicker_prefill'] ) ? $datetime_options['timepicker_prefill'] : true ); ?>"
-					<?php method_exists( $this, 'add_custom_attrs' ) ? self::add_custom_attrs( 'timepicker' ) : ''; ?>
+					<?php $this->handle_custom_attrs( 'timepicker', $options ); ?>
 				/>
 			</div>
 			<?php

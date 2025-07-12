@@ -10,6 +10,7 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.txt
 Documentation: https://siteorigin.com/premium-documentation/plugin-addons/custom-row-colors/
 Tags: Page Builder
 Requires: siteorigin-panels
+Minimum Version: siteorigin-panels 2.17.0
 Video:
 */
 
@@ -25,6 +26,8 @@ class SiteOrigin_Premium_Plugin_Custom_Row_Colors {
 	}
 
 	public function get_settings_form() {
+		$settings = array();
+
 		if ( method_exists( 'SiteOrigin_Panels_Admin', 'get_row_colors' ) ) {
 			$row_colors = SiteOrigin_Panels_Admin::get_row_colors();
 

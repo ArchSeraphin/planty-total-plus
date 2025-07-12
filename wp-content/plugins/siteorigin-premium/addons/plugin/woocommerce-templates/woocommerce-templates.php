@@ -95,6 +95,9 @@ class SiteOrigin_Premium_Plugin_WooCommerce_Templates {
 		add_action( 'wp_enqueue_scripts', array( $this, 'shortcode_enqueue_frontend_scripts' ) );
 		add_filter( 'body_class', array( $this, 'shortcode_add_body_class' ) );
 
+		// Add .woocommerce class wrapper.
+		add_action( 'siteorigin_premium_wctb_template_before', array( $this, 'open_wc_wrapper' ), 10, 1 );
+		add_action( 'siteorigin_premium_wctb_template_after', array( $this, 'close_wc_wrapper' ), 10, 1 );
 
 		// Add compatibility for the Black Studio TinyMCE plugin.
 		if ( class_exists( 'Black_Studio_TinyMCE_Admin' ) ) {
@@ -332,9 +335,10 @@ class SiteOrigin_Premium_Plugin_WooCommerce_Templates {
 				'wctb_1210_upgrade_notice',
 				sprintf(
 					__(
-						'<strong>SiteOrigin Premium User Action Required:</strong> Please, go to the %sWooCommerce Template Builder%s. Check each template tab and ensure that the "Set as default" and "Enable template" checkboxes are enabled or disabled as required. This is a one-time task, thanks for your support. For assistance, please, email %ssupport@siteorigin.com%s.'
+						'<strong>SiteOrigin Premium User Action Required:</strong> Please, go to the %sWooCommerce Template Builder%s. Check each template tab and ensure that the "Set as default" and "Enable template" checkboxes are enabled or disabled as required. This is a one-time task, thanks for your support. For assistance, please, email %ssupport@siteorigin.com%s.',
+						'siteorigin-premium'
 					),
-					'<a href="' . admin_url( 'admin.php?page=so-wc-templates' ) . '" target="_blank" rel="noopener noreferrer">',
+					'<a href="' . esc_url( admin_url( 'admin.php?page=so-wc-templates' ) ) . '" target="_blank" rel="noopener noreferrer">',
 					'</a>',
 					'<a href="mailto:support@siteorigin.com">',
 					'</a>'
@@ -439,7 +443,7 @@ class SiteOrigin_Premium_Plugin_WooCommerce_Templates {
 		$products['woocommerce'] = array(
 			'name' => 'Woocommerce',
 			'weight' => 81,
-			'screenshot' => 'https://ps.w.org/woocommerce/assets/icon-256x256.gif',
+			'screenshot' => 'https://ps.w.org/woocommerce/assets/icon-256x256.png',
 			'type' => 'plugins',
 		);
 
@@ -1056,7 +1060,8 @@ class SiteOrigin_Premium_Plugin_WooCommerce_Templates {
 		if (
 			$current_page == 'cart' &&
 			! empty( WC()->cart ) &&
-			WC()->cart->is_empty()
+			WC()->cart->is_empty() &&
+			! empty( $this->so_wc_templates['cart-empty']['active'] )
 		) {
 			$template = 'cart-empty';
 		}
@@ -1464,6 +1469,8 @@ class SiteOrigin_Premium_Plugin_WooCommerce_Templates {
 		if ( siteorigin_panels_setting( 'add-widget-class' ) ) {
 			add_filter( 'siteorigin_panels_widget_classes', array( $this, 'remove_widget_class' ) );
 		}
+
+		SiteOrigin_Panels_Renderer::single()->print_inline_css();
 	}
 
 	// Confirm custom template exists, and is active before using it.
@@ -1619,5 +1626,13 @@ class SiteOrigin_Premium_Plugin_WooCommerce_Templates {
 		$post = $initial_post;
 
 		return ob_get_clean();
+	}
+
+	public function open_wc_wrapper() {
+		echo '<div class="woocommerce so-wc-wrapper">';
+	}
+
+	public function close_wc_wrapper() {
+		echo '</div>';
 	}
 }

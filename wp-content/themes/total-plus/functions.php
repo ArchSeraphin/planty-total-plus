@@ -288,7 +288,7 @@ if (!function_exists('total_plus_fonts_url')) :
          * Translators: To add an additional character subset specific to your language,
          * translate this to 'greek', 'cyrillic', 'devanagari' or 'vietnamese'. Do not translate into your own language.
          */
-        $subset = _x('no-subset', 'Add new subset (greek, cyrillic, devanagari, vietnamese)', 'total-plus');
+        $subset = esc_html_x('no-subset', 'Add new subset (greek, cyrillic, devanagari, vietnamese)', 'total-plus');
 
         if ('cyrillic' == $subset) {
             $subsets .= ',cyrillic,cyrillic-ext';

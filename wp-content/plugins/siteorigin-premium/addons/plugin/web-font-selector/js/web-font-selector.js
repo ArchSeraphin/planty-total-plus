@@ -22,6 +22,18 @@
 
 	};
 
+	$.fn.setupChosenVariant = function() {
+		const $$ = $( this );
+		if ( $$.data( 'chosen' ) ) {
+			$$.chosen( 'destroy' );
+		}
+
+		$$.chosen( {
+			allow_single_deselect: true,
+			search_contains: true,
+		} );
+	}
+
 	module.init = function(options) {
 		options = module.setDefaultOptions( options );
 		return this.each(
@@ -58,10 +70,8 @@
 					var $v = $container.find( 'select.font-variant' );
 					$v.parent().hide();
 
-					$v.chosen( {
-						allow_single_deselect: true,
-						search_contains: true,
-					} );
+
+					$v.setupChosenVariant();
 				}
 
 				var hasSetup = false;
@@ -120,7 +130,7 @@
 								$v.parent().hide();
 							}
 
-							$v.trigger( 'chosen:updated' );
+							$v.setupChosenVariant();
 						} else {
 							$v.parent().hide();
 						}

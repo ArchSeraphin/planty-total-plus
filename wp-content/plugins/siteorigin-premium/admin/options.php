@@ -2,6 +2,40 @@
 
 class SiteOrigin_Premium_Options {
 	private $messages;
+	private $wb_form_fields = array(
+		'autocomplete',
+		'builder',
+		'checkbox',
+		'checkboxes',
+		'code',
+		'color',
+		'date-range',
+		'font',
+		'html',
+		'icon',
+		'image-radio',
+		'image-shape',
+		'image-size',
+		'link',
+		'measurement',
+		'media',
+		'multi-measurement',
+		'multiple-media',
+		'number',
+		'order',
+		'posts',
+		'presets',
+		'radio',
+		'repeater',
+		'section',
+		'select',
+		'slider',
+		'tabs',
+		'text',
+		'textarea',
+		'tinymce',
+		'widget',
+	);
 
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_admin_page' ), 9 );
@@ -27,13 +61,17 @@ class SiteOrigin_Premium_Options {
 	 */
 	public function add_admin_page() {
 		if ( empty( $GLOBALS['admin_page_hooks']['siteorigin'] ) ) {
+			$svg = file_get_contents( SiteOrigin_Premium::dir_path( __FILE__ ) . '../img/menu-icon.svg' );
+
+			wp_enqueue_style( 'siteorigin-premium-menu-icon' );
+
 			add_menu_page(
 				__( 'SiteOrigin', 'siteorigin-premium' ),
 				__( 'SiteOrigin', 'siteorigin-premium' ),
 				'manage_options',
 				'siteorigin',
 				'',
-				SiteOrigin_Premium::dir_url( __FILE__ ) . '../img/menu-icon.svg',
+				'data:image/svg+xml;base64,' . base64_encode( $svg ),
 				66
 			);
 		}
@@ -75,9 +113,14 @@ class SiteOrigin_Premium_Options {
 			}
 		}
 
-		$prefix = strtolower( $prefix );
+		wp_register_style(
+			'siteorigin-premium-menu-icon',
+			SiteOrigin_Premium::dir_url( __FILE__ ) . 'css/menu-icon.css',
+			array(),
+			SITEORIGIN_PREMIUM_VERSION
+		);
 
-		wp_enqueue_script( 'siteorigin-premium-trunk-animation', SiteOrigin_Premium::dir_url( __FILE__ ) . 'js/trunk-animation' . SiteOrigin_Premium::$js_suffix . '.js', array( 'jquery' ), SITEORIGIN_PREMIUM_VERSION );
+		$prefix = strtolower( $prefix );
 
 		if ( $prefix == 'siteorigin_page_siteorigin-premium-license' || $prefix == 'siteorigin_page_siteorigin-premium-addons' ) {
 			wp_enqueue_style( 'siteorigin-premium-admin', SiteOrigin_Premium::dir_url( __FILE__ ) . 'css/admin.css', array(), SITEORIGIN_PREMIUM_VERSION );
@@ -86,7 +129,20 @@ class SiteOrigin_Premium_Options {
 		if ( $prefix == 'siteorigin_page_siteorigin-premium-addons' ) {
 			wp_enqueue_script( 'vimeo', 'https://player.vimeo.com/api/player.js', array(), '2.7.0' );
 			wp_enqueue_script( 'siteorigin-premium-trianglify', SiteOrigin_Premium::dir_url( __FILE__ ) . 'js/trianglify' . SiteOrigin_Premium::$js_suffix . '.js', array( 'jquery' ), SITEORIGIN_PREMIUM_VERSION );
-			wp_enqueue_script( 'siteorigin-premium-addons', SiteOrigin_Premium::dir_url( __FILE__ ) . 'js/addons' . SiteOrigin_Premium::$js_suffix . '.js', array( 'jquery' ), SITEORIGIN_PREMIUM_VERSION );
+
+			$this->maybe_enqueue_wb_admin_scripts();
+			$addon_script_dependencies = array( 'jquery');
+
+			if ( wp_script_is( 'siteorigin-widget-admin', 'registered' ) ){
+				$addon_script_dependencies[] = 'siteorigin-widget-admin';
+			}
+
+			wp_enqueue_script(
+				'siteorigin-premium-addons',
+				SiteOrigin_Premium::dir_url( __FILE__ ) . 'js/addons' . SiteOrigin_Premium::$js_suffix . '.js',
+				$addon_script_dependencies,
+				SITEORIGIN_PREMIUM_VERSION
+			);
 
 			wp_localize_script(
 				'siteorigin-premium-addons',
@@ -102,6 +158,67 @@ class SiteOrigin_Premium_Options {
 				SiteOrigin_Panels_Admin::single()->enqueue_admin_scripts( null, true );
 				SiteOrigin_Panels_Admin::single()->enqueue_admin_styles( null, true );
 			}
+		}
+	}
+
+	/**
+	 * Build an array containing all Widget Bundle Form Fields.
+	 *
+	 * If WB isn't active, we need to manually load all of the form fields scripts.
+	 *
+	 * @return array The array of form fields.
+	 */
+	private function build_wb_form_field_array() {
+		$fields = array();
+
+		if ( class_exists( 'SiteOrigin_Widget_Field_Toggle' ) ) {
+			$this->wb_form_fields[] = 'toggle';
+		}
+
+		foreach ( $this->wb_form_fields as $field ) {
+			$fields[ $field ] = array(
+				'type' => $field,
+				'name' => $field,
+			);
+		}
+		return $fields;
+	}
+
+	/**
+	 * Maybe enqueue the Widget Bundle admin scripts.
+	 *
+	 * Find the first active Widgets Bundle widget and enqueue the WB admin scripts.
+	 * This is used to load the WB admin scripts on the Addons page. This is required
+	 * for when Page Builder isn't active.
+	 */
+	private function maybe_enqueue_wb_admin_scripts(): void {
+		if (
+			! class_exists( 'SiteOrigin_Widgets_Bundle' ) ||
+			! class_exists( 'SiteOrigin_Widgets_Widget_Manager' ) ||
+			wp_script_is( 'siteorigin-widget-admin' )
+		) {
+			return;
+		}
+
+		$active_widgets = SiteOrigin_Widgets_Bundle::single()->get_active_widgets();
+		foreach( $active_widgets as $widget_id => $status ) {
+			if ( ! $status ) {
+				continue;
+			}
+
+			$manager = SiteOrigin_Widgets_Widget_Manager::single();
+			$widget_path = $manager->get_plugin_path( $widget_id );
+			$widget_class = $manager->get_class_from_path( $widget_path );
+
+			$widget = $manager->get_widget_instance( $widget_class );
+			if ( ! $widget ) {
+				continue;
+			}
+
+			$widget->enqueue_scripts();
+			$widget->enqueue_field_scripts( $this->build_wb_form_field_array() );
+
+			break;
 		}
 	}
 
@@ -140,7 +257,7 @@ class SiteOrigin_Premium_Options {
 
 			if ( ! empty( $license_error ) ) {
 				echo '<pre>';
-				echo __( 'License Status when last error occurred:', 'siteorigin-premium' ) . '<br>';
+				echo esc_html__( 'License Status when last error occurred:', 'siteorigin-premium' ) . '<br>';
 				print_r( $license_error );
 				echo '</pre>';
 				$die = true;
@@ -157,15 +274,15 @@ class SiteOrigin_Premium_Options {
 
 				if ( ! empty( $license_data ) ) {
 					if ( empty( $license_data->errors ) ) {
-						echo __( 'No connection issues detected during this test.', 'siteorigin-premium' );
+						echo esc_html__( 'No connection issues detected during this test.', 'siteorigin-premium' );
 						echo '<br>';
 					}
-					echo __( 'License Status:', 'siteorigin-premium' ) . '<br>';
+					echo esc_html__( 'License Status:', 'siteorigin-premium' ) . '<br>';
 					print_r( $license_data );
 				} else {
-					echo __( 'Request to SiteOrigin.com failed.', 'siteorigin-premium' ) . '<br>';
+					echo esc_html__( 'Request to SiteOrigin.com failed.', 'siteorigin-premium' ) . '<br>';
 				}
-				echo __( 'SiteOrigin.com response:', 'siteorigin-premium' ) . '<br>';
+				echo esc_html__( 'SiteOrigin.com response:', 'siteorigin-premium' ) . '<br>';
 				print_r( $response );
 				echo '</pre>';
 				$die = true;
@@ -380,15 +497,11 @@ class SiteOrigin_Premium_Options {
 				}
 
 				if ( $data['CanEnable'] ) {
-					/** @var SiteOrigin_Premium_Form $settings_form */
-					$settings_form = null;
 					$addon = SiteOrigin_Premium::single()->load_addon( $addon_id );
 
-					if ( ! empty( $addon ) && method_exists( $addon, 'get_settings_form' ) ) {
-						$settings_form = $addon->get_settings_form();
-					}
+					$data['has_settings'] = ! empty( $addon ) && method_exists( $addon, 'get_settings_form' );
 
-					if ( ! empty( $settings_form ) ) {
+					if ( $data['has_settings'] ) {
 						$form_url = add_query_arg(
 							array(
 								'id'     => $addon_id,
@@ -397,16 +510,10 @@ class SiteOrigin_Premium_Options {
 							admin_url( 'admin-ajax.php' )
 						);
 						$data['form_url'] = esc_url( wp_nonce_url( $form_url, 'display-addon-settings-form' ) );
-
-						// Enqueue scripts and styles for the form fields.
-						ob_start();
-						$settings_form->form( array() );
-						ob_get_clean();
 					}
-					$data['has_settings'] = ! empty( $settings_form );
 				}
 
-				$addons[$section][$addon_id] = apply_filters( 'siteorigin_premium_addon_data-' . $addon_id, $data );
+				$addons[ $section ][ $addon_id ] = apply_filters( 'siteorigin_premium_addon_data-' . $addon_id, $data );
 			}
 		}
 
@@ -451,11 +558,13 @@ class SiteOrigin_Premium_Options {
 
 		if ( ! empty( $addon ) && method_exists( $addon, 'get_settings_form' ) ) {
 			$settings_form = $addon->get_settings_form();
-			?>
-			<form method="post" action="<?php echo esc_url( $action_url ); ?>" target="so-premium-addon-settings-save">
-				<?php $settings_form->form( $value ); ?>
-			</form>
-			<?php
+			if ( is_object( $settings_form ) ) {
+				?>
+				<form method="post" action="<?php echo esc_url( $action_url ); ?>" target="so-premium-addon-settings-save">
+					<?php $settings_form->form( $value ); ?>
+				</form>
+				<?php
+			}
 		}
 
 		exit();
@@ -471,12 +580,11 @@ class SiteOrigin_Premium_Options {
 		}
 
 		$addon_id = empty( $_GET['id'] ) ? false : $_GET['id'];
-		$new_settings = array_values( $_POST );
-		$this->save_settings( $addon_id, $new_settings, true );
+		$this->save_settings( $addon_id, array(), true );
 		die();
 	}
 
-	public function save_settings( $addon_id, $new_settings, $exit_if_no_addon = false ) {
+	public function save_settings( $addon_id, $new_settings = false, $exit_if_no_addon = false ) {
 		$addon = SiteOrigin_Premium::single()->load_addon( $addon_id );
 
 		if ( empty( $addon ) || ! method_exists( $addon, 'get_settings_form' ) ) {
@@ -489,10 +597,18 @@ class SiteOrigin_Premium_Options {
 		/** @var SiteOrigin_Premium_Form $settings_form */
 		$settings_form = $addon->get_settings_form();
 
-		$new_settings = array_values( $_POST );
+		// Check if $new_settings is valid, and if not, try to get it from $_POST.
+		if ( empty( $new_settings ) || ! is_array( $new_settings ) ) {
+			$new_settings = array_shift( array_values( $_POST ) );
+
+		}
+
 		$old_settings = $this->get_settings( $addon_id );
 
-		$new_settings = $settings_form->update( stripslashes_deep( array_shift( $new_settings ) ), $old_settings );
+		$new_settings = $settings_form->update(
+			stripslashes_deep( $new_settings ),
+			$old_settings
+		);
 
 		unset( $new_settings['_sow_form_id'] );
 		unset( $new_settings['_sow_form_timestamp'] );
@@ -510,7 +626,7 @@ class SiteOrigin_Premium_Options {
 			if ( ! empty( $addon ) && method_exists( $addon, 'get_settings_form' ) ) {
 				$settings_form = $addon->get_settings_form();
 
-				if ( method_exists( $settings_form, 'add_defaults' ) ) {
+				if ( is_object( $settings_form ) && method_exists( $settings_form, 'add_defaults' ) ) {
 					// Add in the defaults.
 					$values = $settings_form->add_defaults( $settings_form->form_options(), $values );
 				}

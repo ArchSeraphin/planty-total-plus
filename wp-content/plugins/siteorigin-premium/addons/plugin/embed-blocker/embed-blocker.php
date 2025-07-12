@@ -16,6 +16,7 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 	private $content;
 	private $currentSite;
 	private $blockId = 0;
+	private $settings;
 
 	public function __construct() {
 		add_action( 'init', array( $this, 'init' ) );
@@ -28,30 +29,244 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 	}
 
 	public function init() {
-		if ( defined( 'SOW_BUNDLE_VERSION' ) ) {
-			add_action( 'wp_head', array( $this, 'add_blocker_less' ) );
-			add_filter( 'the_content', array( $this, 'process_content' ), 99 );
-			add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
-			add_filter( 'siteorigin_premium_content_blocker_content', array( $this, 'additional_blocks' ), 10, 3 );
+		if ( ! defined( 'SOW_BUNDLE_VERSION' ) ) {
+			return;
+		}
 
-			add_action( 'siteorigin_premium_version_update', array( $this, 'update_settings_migration' ), 20, 2 );
+		add_action( 'wp_head', array( $this, 'add_blocker_less' ) );
+		add_filter( 'the_content', array( $this, 'process_content' ), 99 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+		add_filter( 'siteorigin_premium_content_blocker_content', array( $this, 'additional_blocks' ), 10, 3 );
+
+		add_action( 'siteorigin_premium_version_update', array( $this, 'update_settings_migration' ), 20, 2 );
+	}
+
+	/**
+	 * Migrates settings after a SO Premium update.
+	 *
+	 * This function handles the migration of settings when updating to a new
+	 * version of the plugin.  It retrieves the current settings, checks if
+	 * there are any new embeds, and performs necessary updates based on
+	 * the version comparison.
+	 *
+	 * @param string $new_version The new version of the plugin.
+	 * @param string $old_version The old version of the plugin.
+	 *
+	 * @return void
+	 */
+	public function update_settings_migration( $new_version, $old_version ) {
+		$this->settings = SiteOrigin_Premium_Options::single()->get_settings( 'plugin/embed-blocker' );
+
+		if ( empty( $this->settings ) || ! is_array( $this->settings ) ) {
+			return;
+		}
+
+		$save_settings = $this->import_new_embeds( $old_version );
+
+		// Migrate padding to multi-measurement.
+		if (
+			is_array( $this->settings['blocker_design'] ) &&
+			is_array( $this->settings['blocker_design']['container'] ) &&
+			! empty( $this->settings['blocker_design']['container']['padding'] ) &&
+			strpos( $this->settings['blocker_design']['container']['padding'], ' ' ) === false
+		) {
+			$padding = $this->settings['blocker_design']['container']['padding'];
+			$this->settings['blocker_design']['container']['padding'] = sanitize_text_field( "$padding $padding $padding $padding" );
+			$save_settings = true;
+		}
+
+		if ( $save_settings ) {
+			SiteOrigin_Premium_Options::single()->save_settings(
+				'plugin/embed-blocker',
+				$this->settings
+			);
 		}
 	}
 
-	public function update_settings_migration( $new_version, $old_version ) {
-		if ( version_compare( $old_version, '1.60.0', '<=' ) ) {
-			$settings = SiteOrigin_Premium_Options::single()->get_settings( 'plugin/embed-blocker' );
-
-			// Migrate padding to multi-measurement.
-			if (
-				! empty( $settings['blocker_design']['container']['padding'] )
-				&& strpos( $settings['blocker_design']['container']['padding'], ' ' ) === false
-			) {
-				$padding = $settings['blocker_design']['container']['padding'];
-				$settings['blocker_design']['container']['padding'] = sanitize_text_field( "$padding $padding $padding $padding" );
-				SiteOrigin_Premium_Options::single()->save_settings( 'plugin/embed-blocker', $settings );
+	/**
+	 * Finds an existing embed in the settings based on the label.
+	 *
+	 * This function iterates through the existing embeds in the settings
+	 * and checks if any of them have the same label as the provided embed.
+	 * If a match is found, it returns the key of the existing embed;
+	 * otherwise, it returns false.
+	 *
+	 * This function is triggered during the upgrade process.
+	 *
+	 * @param array $embed The embed to check against existing embeds.
+	 *
+	 * @return int|bool The key of the existing embed if found, false otherwise.
+	 */
+	private function find_existing_embed( $embed ) {
+		foreach ( $this->settings['content'] as $key => $existing_embed ) {
+			if ( $existing_embed['label'] === $embed['label'] ) {
+				return $key;
 			}
 		}
+
+		return false;
+	}
+
+	/**
+	 * Imports new embeds if there are any available that are newer than the old version.
+	 *
+	 * This function checks if the user has any embeds present. If not, it assumes
+	 * that the absence of embeds is intentional and does not add any new embeds.
+	 * It then retrieves the default embeds and compares their versions with the old version. If there are any new embeds with a version greater than the old version, they are added to the user's content.
+	 *
+	 * @param string $old_version The version to compare against to determine if there are new embeds.
+	 *
+	 * @return bool Returns true if new embeds were added, false otherwise.
+	 */
+	private function import_new_embeds( $old_version ) {
+		// Does the user have any embeds present?
+		// If they don't, we shouldn't add any as it's likely intentional.
+		if ( empty( $this->settings['content'] ) ) {
+			return false;
+		}
+
+		$default_embeds = $this->get_default_embeds();
+		$embed_updated = false;
+
+		// Find any new embeds.
+		foreach ( $default_embeds as $embed ) {
+			if (
+				empty( $embed['version'] ) ||
+				version_compare( $embed['version'], $old_version, '<=' )
+			) {
+				continue;
+			}
+
+			// Check if this embed already exists. Update the existing setting.
+			$existing_embed_key = $this->find_existing_embed( $embed );
+			if ( $existing_embed_key !== false ) {
+				if ( ! empty( $embed['urls'] ) ) {
+					$this->settings['content'][ $existing_embed_key ]['urls'] = $embed['urls'];
+				}
+
+				if ( ! empty( $embed['class'] ) ) {
+					$this->settings['content'][ $existing_embed_key ]['class'] = $embed['class'];
+				}
+
+				if ( ! empty( $embed['type'] ) ) {
+					$this->settings['content'][ $existing_embed_key ]['type'] = $embed['type'];
+				}
+
+				$embed_updated = true;
+				continue;
+			}
+
+			$this->settings['content'][] = $embed;
+			$embed_updated = true;
+		}
+
+		return $embed_updated;
+	}
+
+	/**
+	 * Get the default embeds.
+	 *
+	 * This method returns an array of default embed settings, each containing:
+	 * - status: Whether the embed is enabled (default is false).
+	 * - label: A human-readable label for the embed.
+	 * - urls: The URLs associated with the embed.
+	 * - class: A HTML class associated with the content that should be blocked.
+	 * - privacy_link: A link to the privacy policy for the embed.
+	 * - type: The type of embed (e.g., iframe, script, blockquote, class).
+	 * - class: (Optional) The CSS class associated with the embed.
+	 * - version: (Optional) The SO Premium version the embed was introduced. This is used when updating to import new embeds.
+	 *
+	 * @return array The default embed settings.
+	 */
+	private function get_default_embeds() {
+		return array(
+			array(
+				'status' => false,
+				'label' => 'Google Maps Embed',
+				'urls' => 'maps.google.com, google.com/maps',
+				'privacy_link' => 'https://policies.google.com/privacy',
+				'type' => 'iframe',
+				'version' => '1.70.1',
+			),
+			array(
+				'status' => false,
+				'label' => 'Facebook iFrame',
+				'urls' => 'facebook.com',
+				'privacy_link' => 'https://www.facebook.com/policy.php',
+				'type' => 'iframe',
+			),
+			array(
+				'status' => false,
+				'label' => 'Facebook JavaScript SDK',
+				'urls' => 'connect.facebook.net',
+				'privacy_link' => 'https://www.facebook.com/policy.php',
+				'type' => 'script',
+			),
+			array(
+				'status' => false,
+				'label' => 'Instagram',
+				'urls' => 'instagram.com',
+				'privacy_link' => 'https://privacycenter.instagram.com/policy/',
+				'type' => 'blockquote',
+			),
+			array(
+				'status' => false,
+				'label' => 'Reddit',
+				'urls' => 'reddit.com',
+				'privacy_link' => 'https://www.redditinc.com/policies/privacy-policy',
+				'type' => 'blockquote',
+			),
+			array(
+				'status' => false,
+				'label' => 'SoundCloud',
+				'urls' => 'w.soundcloud.com',
+				'privacy_link' => 'https://soundcloud.com/pages/privacy',
+				'type' => 'iframe',
+			),
+			array(
+				'status' => false,
+				'label' => 'Spotify',
+				'urls' => 'open.spotify.com',
+				'privacy_link' => 'https://www.spotify.com/us/legal/privacy-policy/',
+				'type' => 'iframe',
+			),
+			array(
+				'status' => false,
+				'label' => 'TikTok',
+				'urls' => 'tiktok.com',
+				'privacy_link' => 'https://www.tiktok.com/legal/privacy-policy',
+				'type' => 'blockquote',
+			),
+			array(
+				'status' => false,
+				'label' => 'Twitter / X',
+				'urls' => 'platform.twitter.com',
+				'privacy_link' => 'https://twitter.com/privacy',
+				'type' => 'blockquote',
+			),
+			array(
+				'status' => false,
+				'label' => 'Vimeo',
+				'urls' => 'player.vimeo.com',
+				'privacy_link' => 'https://vimeo.com/privacy',
+				'type' => 'iframe',
+			),
+			array(
+				'status' => false,
+				'label' => 'YouTube',
+				'urls' => 'youtube.com, youtu.be, youtube-nocokie.com',
+				'privacy_link' => 'https://policies.google.com/privacy',
+				'type' => 'iframe',
+			),
+			array(
+				'status' => false,
+				'label' => 'WP Go Maps ',
+				'class' => 'wpgmza_map',
+				'privacy_link' => 'https://policies.google.com/privacy',
+				'type' => 'class',
+				'version' => '1.70.1',
+			),
+		);
 	}
 
 	public function message_field_help( $shortcode, $text ) {
@@ -135,9 +350,17 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 								'label' => __( 'Site', 'siteorigin-premium' ),
 							),
 							array(
-								'selector' => '.siteorigin-widget-field-urls .siteorigin-widget-input',
-								'valueMethod' => 'val',
-								'label' => __( 'URLs', 'siteorigin-premium' ),
+								'selectorArray' => array(
+									array(
+										'selector' => '.siteorigin-widget-field-urls .siteorigin-widget-input',
+										'valueMethod' => 'val',
+									),
+									array(
+										'selector' => '.siteorigin-widget-field-class .siteorigin-widget-input',
+										'valueMethod' => 'val',
+									),
+								),
+								'label' => __( 'Target', 'siteorigin-premium' ),
 							),
 							array(
 								'selector' => '.siteorigin-widget-field-status .siteorigin-widget-input',
@@ -146,85 +369,7 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 							),
 						),
 					),
-					'default' => array(
-						array(
-							'status' => false,
-							'label' => 'Google Maps Embed',
-							'urls' => 'maps.google.com',
-							'privacy_link' => 'https://policies.google.com/privacy',
-							'type' => 'iframe',
-						),
-						array(
-							'status' => false,
-							'label' => 'Facebook iFrame',
-							'urls' => 'facebook.com',
-							'privacy_link' => 'https://www.facebook.com/policy.php',
-							'type' => 'iframe',
-						),
-						array(
-							'status' => false,
-							'label' => 'Facebook JavaScript SDK',
-							'urls' => 'connect.facebook.net',
-							'privacy_link' => 'https://www.facebook.com/policy.php',
-							'type' => 'script',
-						),
-						array(
-							'status' => false,
-							'label' => 'Instagram',
-							'urls' => 'instagram.com',
-							'privacy_link' => 'https://privacycenter.instagram.com/policy/',
-							'type' => 'blockquote',
-						),
-						array(
-							'status' => false,
-							'label' => 'Reddit',
-							'urls' => 'reddit.com',
-							'privacy_link' => 'https://www.redditinc.com/policies/privacy-policy',
-							'type' => 'blockquote',
-						),
-						array(
-							'status' => false,
-							'label' => 'SoundCloud',
-							'urls' => 'w.soundcloud.com',
-							'privacy_link' => 'https://soundcloud.com/pages/privacy',
-							'type' => 'iframe',
-						),
-						array(
-							'status' => false,
-							'label' => 'Spotify',
-							'urls' => 'open.spotify.com',
-							'privacy_link' => 'https://www.spotify.com/us/legal/privacy-policy/',
-							'type' => 'iframe',
-						),
-						array(
-							'status' => false,
-							'label' => 'TikTok',
-							'urls' => 'tiktok.com',
-							'privacy_link' => 'https://www.tiktok.com/legal/privacy-policy',
-							'type' => 'blockquote',
-						),
-						array(
-							'status' => false,
-							'label' => 'Twitter / X',
-							'urls' => 'platform.twitter.com',
-							'privacy_link' => 'https://twitter.com/privacy',
-							'type' => 'blockquote',
-						),
-						array(
-							'status' => false,
-							'label' => 'Vimeo',
-							'urls' => 'player.vimeo.com',
-							'privacy_link' => 'https://vimeo.com/privacy',
-							'type' => 'iframe',
-						),
-						array(
-							'status' => false,
-							'label' => 'YouTube',
-							'urls' => 'youtube.com, youtu.be, youtube-nocokie.com',
-							'privacy_link' => 'https://policies.google.com/privacy',
-							'type' => 'iframe',
-						),
-					),
+					'default' => $this->get_default_embeds(),
 					'fields' => array(
 						'status' => array(
 							'type' => 'checkbox',
@@ -238,6 +383,20 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 							'type' => 'text',
 							'label' => __( 'Site URLs', 'siteorigin-premium' ),
 							'description' => __( 'Enter a comma separated list of URLs to block.', 'siteorigin-premium' ),
+							'state_handler' => array(
+								'embed_type_{$repeater}[class]' => array( 'hide' ),
+								'_else[embed_type_{$repeater}]' => array( 'show' ),
+							),
+						),
+
+						'class' => array(
+							'type' => 'text',
+							'label' => __( 'Class', 'siteorigin-premium' ),
+							'description' => __( 'Enter a HTML Class added to the element.', 'siteorigin-premium' ),
+							'state_handler' => array(
+								'embed_type_{$repeater}[class]' => array( 'show' ),
+								'_else[embed_type_{$repeater}]' => array( 'hide' ),
+							),
 						),
 						'privacy_link' => array(
 							'type' => 'text',
@@ -251,8 +410,13 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 								'iframe' => __( 'iFrame', 'siteorigin-premium' ),
 								'blockquote' => __( 'Blockquote', 'siteorigin-premium' ),
 								'script' => __( 'Script', 'siteorigin-premium' ),
+								'class' => __( 'HTML Class', 'siteorigin-premium' ),
 							),
-							'description' => __( 'Select the embed type to be targetted for blocking.', 'siteorigin-premium' ),
+							'description' => __( 'Select the embed type to be targeted for blocking.', 'siteorigin-premium' ),
+							'state_emitter' => array(
+								'callback' => 'select',
+								'args' => array( 'embed_type_{$repeater}' ),
+							),
 						),
 					),
 				),
@@ -394,6 +558,33 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 		return $this->content;
 	}
 
+	private function compile_css( $less ) {
+		if ( ! class_exists( 'SiteOrigin_LessC' ) ) {
+			require plugin_dir_path( SOW_BUNDLE_BASE_FILE ) . 'base/inc/lessc.inc.php';
+		}
+
+		$compiler = new SiteOrigin_LessC();
+
+		try {
+			if ( method_exists( $compiler, 'compile' ) ) {
+				$css = @ $compiler->compile( $less );
+			}
+		} catch ( Exception $e ) {
+			if ( defined( 'SITEORIGIN_WIDGETS_DEBUG' ) && SITEORIGIN_WIDGETS_DEBUG ) {
+				throw $e;
+			}
+		}
+
+		// Remove any attributes with default as the value
+		$css = preg_replace( '/[a-zA-Z\-]+ *: *default *;/', '', $css );
+
+		// Remove any empty CSS
+		$css = preg_replace( '/[^{}]*\{\s*\}/m', '', $css );
+		$css = trim( $css );
+
+		return $css;
+	}
+
 	private function generate_less( $design = array() ) {
 		if ( empty( $design ) ) {
 			return;
@@ -459,33 +650,6 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 		return $this->compile_css( $less );
 	}
 
-	private function compile_css( $less ) {
-		if ( ! class_exists( 'SiteOrigin_LessC' ) ) {
-			require plugin_dir_path( SOW_BUNDLE_BASE_FILE ) . 'base/inc/lessc.inc.php';
-		}
-
-		$compiler = new SiteOrigin_LessC();
-
-		try {
-			if ( method_exists( $compiler, 'compile' ) ) {
-				$css = @ $compiler->compile( $less );
-			}
-		} catch ( Exception $e ) {
-			if ( defined( 'SITEORIGIN_WIDGETS_DEBUG' ) && SITEORIGIN_WIDGETS_DEBUG ) {
-				throw $e;
-			}
-		}
-
-		// Remove any attributes with default as the value
-		$css = preg_replace( '/[a-zA-Z\-]+ *: *default *;/', '', $css );
-
-		// Remove any empty CSS
-		$css = preg_replace( '/[^{}]*\{\s*\}/m', '', $css );
-		$css = trim( $css );
-
-		return $css;
-	}
-
 	public function add_blocker_less() {
 		$settings = SiteOrigin_Premium_Options::single()->get_settings( 'plugin/embed-blocker' );
 
@@ -515,7 +679,23 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 				continue;
 			}
 
-			$urls = explode( ',', $site['urls'] );
+			if ( $site['type'] === 'class' ) {
+				$class = ! empty( $site['class'] ) ? str_replace( array( '.', '#' ), '', $site['class'] ) : '';
+
+				if ( ! empty( $class ) ) {
+					$this->do_block( $class, $settings, $site );
+					$load_assets = true;
+				}
+				continue;
+			}
+
+			if ( ! empty( $site['urls'] ) ) {
+				$urls = explode( ',', $site['urls'] );
+			}
+
+			if ( empty( $urls ) ) {
+				continue;
+			}
 
 			foreach ( $urls as $url ) {
 				$url = trim( $url );
@@ -526,14 +706,7 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 
 				if ( strpos( $this->content, $url ) !== false ) {
 					// Found an embed. Let's block it.
-					$this->setup_block_message( $settings, $site );
-					$this->block_embed( $url, $site );
-					$this->content = apply_filters(
-						'siteorigin_premium_content_blocker_content',
-						$this->content,
-						$url,
-						$settings
-					);
+					$this->do_block( $url, $settings, $site );
 					$load_assets = true;
 				}
 			}
@@ -544,6 +717,17 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 		}
 
 		return $this->content;
+	}
+
+	private function do_block( $value, $settings, $site ) {
+		$this->setup_block_message( $settings, $site );
+		$this->block_embed( $value, $site );
+		$this->content = apply_filters(
+			'siteorigin_premium_content_blocker_content',
+			$this->content,
+			$value,
+			$settings
+		);
 	}
 
 	private function apply_addon_shortcodes( $settings, $site ) {
@@ -560,7 +744,7 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 				$this->block_message
 			);
 		} else {
-			// This embed type doesn't have a privacy link set. 
+			// This embed type doesn't have a privacy link set.
 			// Remove the privacy link HTML, and retain the anchor text.
 			$this->block_message = preg_replace(
 				'/<a[^>]*>([^<]*[privacy_link][^<]*)<\/a>/s',
@@ -635,6 +819,10 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 	 * @return string The platform name extracted from the URL.
 	 */
 	public function get_platform_name( $url ) {
+		if ( empty( $url ) ) {
+			return sanitize_title( $this->currentSite['label'] );
+		}
+
 		$url = explode( ',', $url )[0];
 		$parts = explode( '.', $url );
 		$count = count( $parts );
@@ -654,22 +842,33 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 		return $url;
 	}
 
-	private function block_embed( $url, $site ) {
+	private function block_embed( $target, $site ) {
 		$type = empty( $site['type'] ) ? 'iframe' : $site['type'];
 		$this->currentSite = $site;
 
+		if ( $type == 'class' ) {
+			return $this->block_embed_class( $target );
+		}
+
 		if ( $type == 'blockquote' ) {
 			// Blockquote embeds are a blockquote followed by a script element.
-			$this->block_embed_element( $url, 'blockquote' );
+			$this->block_embed_element( $target, 'blockquote' );
 
-			return $this->block_embed_script( $url, false );
+			return $this->block_embed_script( $target, false );
 		}
 
 		if ( $type === 'script' ) {
-			return $this->block_embed_script( $url );
+			return $this->block_embed_script( $target );
 		}
 
-		return $this->block_embed_iframe( $url );
+		return $this->block_embed_iframe( $target );
+	}
+
+	private function block_embed_class( $class ) {
+		$this->edit_content(
+			'/<.*?class="' . esc_attr( $class ) . '.*?<\/.*?>/m',
+			'class'
+		);
 	}
 
 	private function block_embed_element( $url, $element, $class = false ) {
@@ -725,15 +924,25 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 
 		$this->content = preg_replace_callback(
 			$pattern,
-			function( $matches ) use ( $type, $add_block_message, $slug ) {
+			function ( $matches ) use ( $type, $add_block_message, $slug ) {
+				// If we're blocking a class, we have to identify the first element.
+				if ( $type === 'class' ) {
+					preg_match( '/<(\w+)([^>]*)>/', $matches[0], $tagMatches );
+					if ( ! empty( $tagMatches ) ) {
+						$tag = $tagMatches[1];
+					}
+				} else {
+					$tag = $type;
+				}
+
 				$this->blockId++;
 				$block_id = 'siteorigin-premium-embed-blocker-' . $this->blockId;
 				$block_message = $add_block_message ? $this->edit_content_block_message( $block_id ) : '';
 
 				return str_replace(
 					array(
-						'<' . esc_attr( $type ),
-						'</' . esc_attr( $type ) . '>',
+						'<' . esc_attr( $tag ),
+						'</' . esc_attr( $tag ) . '>'
 					),
 					array(
 						'<section
@@ -741,8 +950,9 @@ class SiteOrigin_Premium_Plugin_Embed_Blocker {
 							so-embed-blocker="true"
 							style="display: none;"
 							data-site-slug="' . esc_attr( $slug ) . '"
-							data-type="' . esc_attr( $type ) . '"',
-						'</section>',
+							data-type="' . esc_attr( $type ) . '"
+							data-tag="' . esc_attr( $tag ) . '"',
+						'</section>'
 					),
 					$matches[0]
 				) . $block_message;

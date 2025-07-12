@@ -29,6 +29,12 @@ SiteOriginPremium.setupDatepicker = function ( $ ) {
 		var $valInput = $datepickerContainer.siblings( '.so-contactform-datetime' );
 		var defaultDate = $valInput.val() ? new Date( $valInput.val() ) : '';
 
+		// If we don't have a previously set value, check if we need
+		// to prefill the field.
+		if ( ! defaultDate && $datepicker.data( 'prefill' ) ) {
+			defaultDate = new Date();
+		}
+
 		var updateDate = function () {
 			var date = $datepicker.data( 'pikaday' ).getDate();
 			var $timepicker = $datepickerContainer.siblings( '.timepicker-container' ).find( '.so-premium-timepicker' );

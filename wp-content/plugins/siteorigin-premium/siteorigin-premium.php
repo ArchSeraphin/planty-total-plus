@@ -2,9 +2,9 @@
 /*
 Plugin Name: SiteOrigin Premium
 Description: A collection of powerful addons that enhance every aspect of SiteOrigin plugins and themes.
-Version: 1.68.0
+Version: 1.72.1
 Requires at least: 4.7
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 7.0.0
 Author: SiteOrigin
 Text Domain: siteorigin-premium
@@ -15,7 +15,7 @@ License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.txt
 */
 
-define( 'SITEORIGIN_PREMIUM_VERSION', '1.68.0' );
+define( 'SITEORIGIN_PREMIUM_VERSION', '1.72.1' );
 define( 'SITEORIGIN_PREMIUM_JS_SUFFIX', '.min' );
 define( 'SITEORIGIN_PREMIUM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SITEORIGIN_PREMIUM_URL', plugin_dir_url( __FILE__ ) );
@@ -300,7 +300,7 @@ if ( ! class_exists( 'SiteOrigin_Premium' ) ) {
 			$addon_id = sanitize_file_name( $addon_id );
 
 			$active_addons = $this->get_active_addons();
-			$filename = SiteOrigin_Premium::dir_path( __FILE__ ) . 'addons/' . $addon_section . '/' . $addon_id . '/' . $addon_id . '.php';
+			$filename = self::dir_path( __FILE__ ) . 'addons/' . $addon_section . '/' . $addon_id . '/' . $addon_id . '.php';
 
 			if ( file_exists( $filename ) ) {
 				$active_addons[ $id ] = $active;
@@ -344,21 +344,21 @@ if ( ! class_exists( 'SiteOrigin_Premium' ) ) {
 
 			wp_register_style(
 				'siteorigin-premium-animate',
-				SiteOrigin_Premium::dir_url( __FILE__ ) . 'css/animate' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.css',
-				array( ),
+				self::dir_url( __FILE__ ) . 'css/animate' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.css',
+				array(),
 				SITEORIGIN_PREMIUM_VERSION
 			);
 
 			wp_register_script(
 				'siteorigin-premium-animate',
-				SiteOrigin_Premium::dir_url( __FILE__ ) . 'js/animate' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
+				self::dir_url( __FILE__ ) . 'js/animate' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
 				array( 'jquery' ),
 				SITEORIGIN_PREMIUM_VERSION
 			);
 
 			wp_register_script(
 				'siteorigin-premium-map-user-location',
-				SiteOrigin_Premium::dir_url( __FILE__ ) . 'js/map-user-location' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
+				self::dir_url( __FILE__ ) . 'js/map-user-location' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
 				array( 'jquery' ),
 				SITEORIGIN_PREMIUM_VERSION
 			);
@@ -367,14 +367,14 @@ if ( ! class_exists( 'SiteOrigin_Premium' ) ) {
 				if ( ! wp_script_is( 'simpleParallax', 'registered' ) ) {
 					wp_register_script(
 						'siteorigin-setup-parallax',
-						SiteOrigin_Premium::dir_url( __FILE__ ) . 'js/setup-parallax' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
+						self::dir_url( __FILE__ ) . 'js/setup-parallax' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
 						array(),
 						SITEORIGIN_PREMIUM_VERSION
 					);
 
 					wp_register_script(
 						'simpleParallax',
-						SiteOrigin_Premium::dir_url( __FILE__ ) . 'js/simpleparallax' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
+						self::dir_url( __FILE__ ) . 'js/simpleparallax' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
 						array( 'jquery', 'siteorigin-setup-parallax' ),
 						'5.5.1'
 					);
@@ -396,7 +396,7 @@ if ( ! class_exists( 'SiteOrigin_Premium' ) ) {
 			} elseif ( ! wp_script_is( 'siteorigin-parallax', 'registered' ) ) {
 				wp_register_script(
 					'siteorigin-parallax',
-					SiteOrigin_Premium::dir_url( __FILE__ ) . 'js/siteorigin-parallax' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
+					self::dir_url( __FILE__ ) . 'js/siteorigin-parallax' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
 					array( 'jquery' ),
 					SITEORIGIN_PREMIUM_VERSION
 				);
@@ -479,7 +479,7 @@ if ( ! class_exists( 'SiteOrigin_Premium' ) ) {
 				$filename = __FILE__;
 			}
 
-			switch( self::is_theme_mode() ) {
+			switch ( self::is_theme_mode() ) {
 				case 'template':
 					$url = str_replace( get_template_directory(), get_template_directory_uri(), dirname( $filename ) );
 					break;
@@ -507,7 +507,7 @@ if ( ! class_exists( 'SiteOrigin_Premium' ) ) {
 				$filename = __FILE__;
 			}
 
-			switch( self::is_theme_mode() ) {
+			switch ( self::is_theme_mode() ) {
 				case 'template':
 				case 'stylesheet':
 					$dir = dirname( $filename );

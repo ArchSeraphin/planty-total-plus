@@ -4,6 +4,7 @@ defined( 'ABSPATH' ) || exit;
 
 global $product;
 
+do_action( 'siteorigin_premium_wctb_template_before', 'single_product' );
 do_action( 'woocommerce_before_single_product' );
 
 if ( post_password_required() ) {
@@ -42,8 +43,9 @@ if ( post_password_required() ) {
 			$structured_data->generate_product_data();
 		}
 	}
-	?>	
+	?>
 </div>
 <?php
 
 do_action( 'woocommerce_after_single_product' );
+do_action( 'siteorigin_premium_wctb_template_after', 'single_product' );

@@ -2,3 +2,6 @@
   padding: 0;
   min-width: 100%;
 }
+.column-so_mirror_widget_shortcode input[type="text"] {
+  max-width: 100%;
+}

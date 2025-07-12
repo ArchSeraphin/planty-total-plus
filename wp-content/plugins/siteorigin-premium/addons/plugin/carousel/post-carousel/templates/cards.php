@@ -4,11 +4,13 @@ $tag = SiteOrigin_Premium_Utility::single()->validate_tag( $settings['item_title
 while ( $settings['posts']->have_posts() ) {
 	$settings['posts']->the_post();
 	?>
-	<div class="sow-carousel-item<?php
-		if ( $settings['link_overlay'] ) {
-			echo ' sow-carousel-item-link-overlay';
-		}
-	?>">
+	<div class="sow-carousel-item
+	<?php
+	if ( $settings['link_overlay'] ) {
+		echo ' sow-carousel-item-link-overlay';
+	}
+	?>
+	">
 		<?php SiteOrigin_Premium_Plugin_Carousel::post_featured_image( $settings ); ?>
 
 		<div class="sow-carousel-item-inner">
@@ -42,6 +44,6 @@ while ( $settings['posts']->have_posts() ) {
 			</a>
 		<?php } ?>
 	</div>
-<?php
+	<?php
 }
 wp_reset_postdata();

@@ -236,7 +236,7 @@ class SiteOrigin_Premium_Plugin_Author_Box {
 			array(
 				'position' => array(
 					'type' => 'presets',
-					'label' => __( 'Position', 'so-widgets-bundle' ),
+					'label' => __( 'Position', 'siteorigin-premium' ),
 					'default_preset' => 'avatar_below',
 					'options' => $positions,
 				),
@@ -246,10 +246,10 @@ class SiteOrigin_Premium_Plugin_Author_Box {
 					'label' => __( 'Margin', 'siteorigin-premium' ),
 					'default' => '10px 0px 0px 0px',
 					'measurements' => array(
-						'top' => __( 'Top', 'so-widgets-bundle' ),
-						'right' => __( 'Right', 'so-widgets-bundle' ),
-						'bottom' => __( 'Bottom', 'so-widgets-bundle' ),
-						'left' => __( 'Left', 'so-widgets-bundle' ),
+						'top' => __( 'Top', 'siteorigin-premium' ),
+						'right' => __( 'Right', 'siteorigin-premium' ),
+						'bottom' => __( 'Bottom', 'siteorigin-premium' ),
+						'left' => __( 'Left', 'siteorigin-premium' ),
 					),
 				),
 			)
@@ -556,7 +556,7 @@ class SiteOrigin_Premium_Plugin_Author_Box {
 	public function add_author_box( $content ) {
 		$settings = SiteOrigin_Premium_Options::single()->get_settings( 'plugin/author-box' );
 
-		if ( ! is_singular() ) {
+		if ( ! is_singular() || empty( $settings['widget'] ) ) {
 			return $content;
 		}
 

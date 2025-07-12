@@ -1,9 +1,9 @@
 === SiteOrigin Premium ===
 Requires at least: 4.7
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 7.0.0
-Stable tag: 1.68.0
-Build time: 2024-11-24T19:34:29+00:00
+Stable tag: 1.72.1
+Build time: 2025-06-14T15:27:50+01:00
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -29,6 +29,96 @@ The SiteOrigin Premium plugin can be downloaded via the link provided in your or
 
 == Changelog ==
 
+= 1.72.1 - 14 June 2025 =
+* Custom Status Pages: Fixed font-family property and improved font-related property handling.
+* Custom Status Pages: Fixed font size settings not working as expected and corrected font families having incorrect quotes.
+* Custom Status Pages: Fixed page display type not rendering and resolved .entry-content styling issues.
+* Custom Status Pages: Added output_font_family method and targeted common elements in content area to prevent theme conflicts.
+* Custom Status Pages: Ensured font widget and styles are always set.
+* Maintenance Mode: Delayed display until wp_loaded has triggered to prevent WooCommerce notice.
+* Maintenance Mode: Added Show Settings on Activate support and changed certain defaults.
+* Addons Page: Fixed Show Settings on Activate feature to open correct settings rather than all settings.
+* General: Removed Support Team empty link and updated case.
+* General: Added pre-commit setup with Lefthook and excluded node_modules from build.
+* Installer: Changed WooCommerce screenshot URL.
+
+= 1.72.0 - 21 May 2025 =
+* New Addon! Maintenance Mode: Craft your own maintenance page with text or layout tools. Personalize with custom titles and design elements for a seamless user experience.
+* CPTB: Added post settings support.
+* 404 Page: Removed empty link on 404 page.
+* Addons Page: Added method of opening settings on load.
+* General: Updated maintenance mode indicator.
+* General: Updated PHPCS standards.
+* General: Updated menu icon CSS.
+* Parallax: Fixed background image opacity not working.
+* Utility: Fixed slide out in animations.
+
+= 1.71.0 - 04 May 2025 =
+* Embed Blocker: Added HTML Class block type and improved migration handling.
+* Embed Blocker: Resolved URLs warning and added event trigger after unblock.
+* Mirror Widgets: Updated menu icon and hid permalink.
+* Toggle Visibility: Fixed user role default state.
+* WooCommerce Template Builder: Fixed data tab array changes and vertically aligned action buttons.
+* Addons Page: Ensured Widgets Bundle scripts are active and prevented potential fatals with null settings form.
+* Cross Domain Copy Paste: Removed browser storage method.
+* Custom Row Colors: Added minimum version requirement.
+* General: Updated SiteOrigin menu icon and improved inline SVG icons.
+
+= 1.70.2 - 15 April 2025 =
+* Accordion: Fixed custom sized icon not outputting with correct sizes.
+* Accordion Image: Added custom size inline using CSS and support for partial custom sizes.
+* Accordion Image Icon: Restored custom class when size other than thumbnail was used.
+* Cards Carousel: Corrected icon location and added new icon.
+* CPTB: Added custom labels, removed SO page settings support from CPTB post type, and resolved E_ERROR related to post type supports setting.
+* CTA: Fixed `Desktop Button Align: Center Bottom - Image: Right of Text`.
+* Mirror Widget: Prevented potential shortcode overflow and added block icon.
+* WFS: Improved search icon alignment and fixed SO CSS variant drop down.
+* General: Resolved admin notices text domain notice.
+
+= 1.70.1 - 20 March 2025 =
+* Blog: Improved date format implementation and prevented false positive security flags.
+* Call to Action: Improved image and button alignment for all layout positions.
+* Card Carousel: Allow pagination dots to wrap over multiple lines and added date format options.
+* Web Font Selector: Added new filter 'siteorigin_premium_modify_fonts'.
+* Addons Page: Don't load settings form outside of form context.
+* Utility: Added standardized date format options for use across addons.
+* General: Updated Google Fonts list to the latest version.
+
+= 1.70.0 - 24 February 2025 =
+* Cards Carousel: Clear container gap for arrows when disabled, ensuring proper layout on per-device settings.
+* Contact: Updated fields description with support for description improvements and add_custom_attr for backward compatibility.
+* Contact Datetime: Added prefill date picker with current date setting.
+* Map Styles: Fixed user location check by adding compatibility for the new advanced marker API while maintaining backward compatibility.
+* Map Styles: Added Map ID setting. A Map ID allows you to manage your map styles using the Google Cloud Console. This is only used if Map Styles are not set.
+* Recent Posts: Added Blog Widget checks to address an E_ERROR caused by a missing SiteOrigin_Widget_Blog_Widget (replicable by deactivating the SiteOrigin Blog Widget and navigating to * SiteOrigin > Premium Addons).
+* Related Posts: Improved widget check to ensure expected functionality.
+* General: Fixed case-sensitive addon search by converting search queries to lowercase.
+
+= 1.69.0 – 04 February 2025 =
+* Author Box: Prevent a potential error if the addon settings haven't been saved yet.
+* Blog: Improved infinite pagination loader using the Intersection Observer API for more reliable post loading.
+* Blog: Recent Posts now includes checks to ensure the Blog Widget is activated before loading.
+* Cards Carousel: Added an Adaptive Height setting to allow item heights to adjust to content.
+* Cards Carousel: Fixed a PHP warning related to undefined carousel_settings.
+* Contact Form: Fixed Date Picker field alignment issues.
+* Contact Form: Added standard form spacing to maps to prevent elements from appearing too close.
+* Contact Form: Fixed submission issues with multiple location fields and improved scroll behavior.
+* Contact Form: Added a setting to prefill the Date Picker with the current date.
+* Cross Domain Copy Paste: Resolved Customizer accordion sizing issues caused by Cross Domain Copy Paste.
+* Map Styles: Resolved a warning related to an undefined image_fallback array key.
+
+= 1.68.1 - 23 December 2024 =
+* Cards Carousel: Fixed Ajax instance loading to ensure consistent template rendering.
+* Image Shape: Resolved warning related to loading shapes.
+* Mirror Widgets: Added an additional check to ensure the widget is active and removed the Widgets Bundle requirement.
+* Tabs: Update to ensure Layout Builder Full Width Stretched rows are sized correctly.
+* Toggle Visibility: Improved exempt role handling.
+* WooCommerce Template Builder: Update to ensure Page Builder CSS is output.
+* WooCommerce Template Builder: Improved cart responsiveness after removing all products.
+* WooCommerce Template Builder: Added Before/After Archive Template widget area action hooks.
+* WooCommerce Template Builder: Added .woocommerce wrapper to all templates.
+* Metabox: Resolved potential JavaScript TypeError in console.
+
 = 1.68.0 - 24 November 2024 =
 * Carousel: Updates to ensure correct Block Editor asset loading.
 * Toggle Visibility: Added visibility by user role.
@@ -37,6 +127,15 @@ The SiteOrigin Premium plugin can be downloaded via the link provided in your or
 * WooCommerce Template Builder: Resolved Cart Template output when the Cart Block is use.
 * Metabox: Allowed central page metabox to be collapsible.
 * Updated Google Fonts list.
+
+= 1.67.2 - 24 March 2025 =
+* Blog: Improved date format implementation and prevented false positive security flags.
+* Call to Action: Improved image and button alignment for all layout positions.
+* Card Carousel: Allow pagination dots to wrap over multiple lines and added date format options.
+* Web Font Selector: Added new filter 'siteorigin_premium_modify_fonts'.
+* Addons Page: Don't load settings form outside of form context.
+* Utility: Added standardized date format options for use across addons.
+* General: Updated Google Fonts list to the latest version.
 
 = 1.67.1 - 12 November 2024 =
 * Announcing the SiteOrigin Cards Carousel Widget! Display posts in a sleek carousel with modern, elevated card layouts. Features clean typography and flexible meta display options.
@@ -112,83 +211,5 @@ The SiteOrigin Premium plugin can be downloaded via the link provided in your or
 * Toggle Visibility: Resolved potential PHP warning.
 * WooCommerce Template Builder: Removed Shop Product Loop widget from Product Archive tab.
 * Increased required PHP version to PHP 7.
-
-= 1.61.1 - 17 April 2024 =
-* Anchor ID Addon: Refactored and centralized management, improving widget coordination and simplifying future maintenance.
-* Improved plugin update checker reliability and efficiency by refactoring version information handling.
-
-= 1.61.0 - 12 April 2024 =
-* New Addon! Introducing the Author Box Addon. Automatically append author boxes to posts, featuring social links, recent articles, and bios to create engaging author presentations across multiple post types.
-* WooCommerce Template Builder: Resolved undefined array key "status" warning.
-* Post Carousel: Resolved an issue importing layouts with empty theme data.
-* Toggle Visibility: Accounted for a potential migration issue for legacy rows.
-* Improvements to automatic updates.
-* Improvements to data sanitization.
-* Updated SiteOrigin Installer.
-* Embed Blocker: Added multi-measurement padding.
-
-= 1.60.0 - 07 March 2024 =
-* New Addon! Introducing the Embed Blocker Addon. Effortlessly make your website GDPR and DSGVO compliant by controlling embeds from platforms like YouTube, Vimeo, Twitter, Instagram, Facebook, Google Maps, Reddit, Soundcloud, Spotify, and TikTok until user consent is given.
-* Carousel: Resolved `BuilderType` warning.
-* Image Overlay: Prevented error if global settings are empty.
-
-= 1.59.2 - 02 March 2024 =
-* Improved automatic update support.
-* Google Maps Consent: Updated background color setting to support transparency.
-* Lightbox: Resolved a potential PHP 8.2+ related error.
-* WooCommerce Template Builder: Resolved an error that can occur when editing the cart page directly.
-
-= 1.59.1 - 24 February 2024 =
-* Parallax Sliders: Resolved Jetpack Photon related `Uncaught TypeError`.
-* Cross Domain Copy Paste: Update to ensure a default method is set on first install.
-* Video Background: Resolved a potential Block Editor related display issue.
-* Video Background: Update to prevent `border_radius` warning.
-
-= 1.59.0 - 18 February 2024 =
-* Anything Carousel: Removed `Row Layout` from Layout Builder caoursel items.
-* Call To Action: New Settings! Background Image and supporting settings, Content Vertical Alignment, and Padding.
-* Cross Domain Copy Paste: Added Browser Clipboard textarea to Layout Builders Widgets at Appearance > Widgets. Only the Browser Clipboard method supported at Appearance > Widgets.
-* WooCommerce Template Builder: Loaded the saved cart into the session so the user can see it before paying. Applicable for orders marked as "Pending Payment" and accessed via `/checkout/order-pay/ORDERID/`.
-
-= 1.58.2 - 11 February 2024 =
-* WooCommerce Template Builder: Added Block Editor Thank You page support.
-* Plugin Updater: Bypassed update cache during automatic updates.
-
-= 1.58.1 - 27 January 2024 =
-* Added compatibility with the NativeChurch plugin.
-* Improved user experience of the Full Page toggle visibility feature by adding a new "Schedule" option and reordering visibility options.
-
-= 1.58.0 - 20 January 2024 =
-* Toggle Visibility: Introducing Full Page Visibility! Hide/Show pages or page content. 
-Toggle visibility based on logged-in status. Display a message when content is hidden and 
-optionally redirect users when a page is hidden. Hide/Show available with date scheduling.
-
-= 1.57.1 - 13 January 2024 =
-* Updater: Various improvements.
-* Resolved a WCTB warning message "strpos(): Empty needle" by correcting the order of arguments in the `strpos` function.
-
-= 1.57.0 - 11 January 2024 =
-* Web Font Selector: Added variation support.
-* Updated the Google Fonts array.
-* Addon Management: Improved section & addon ID handling.
-* Added a check to ensure that the `$current_screen` variable is not empty before calling the `method_exists()` function.
-* Added a check to ensure that only users with the appropriate capability can activate the SiteOrigin Premium license.
-
-= 1.56.0 - 07 January 2024 =
-* Metabox: Added a General tab to the metabox for reducing the total number of tabs.
-* Video Background: Added video display support for widgets.
-* Video Background: Introduced support for border-radius in video backgrounds.
-* Video Background: Added support for rounding in video backgrounds.
-* Various code formatting improvements for better readability and consistency.
-
-= 1.55.0 - 05 January 2024 =
-* Blog: Optimized supporting JavaScript assets.
-* Parallax Sliders: Ensured scripts only loaded when needed.
-* WooCommerce Template Builder: Added Genesis, Genesis Connect, and Block Editor compatibility.
-* WooCommerce Template Builder: Added Product Meta Widget display options.
-* Video Background: Added a Loop Video setting.
-* Video Background: Added a Background Video Display setting.
-* Video Background: Adjusted secondary settings to conditionally display when a video is added.
-* Video Background: Updated the Background Video Opacity setting to conditionally display if a Background Video has been set.
 
 [View full changelog.](/wp-content/plugins/siteorigin-premium/changelog.txt)

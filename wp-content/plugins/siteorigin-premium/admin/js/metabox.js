@@ -37,7 +37,8 @@ jQuery( function( $ ) {
 		}
 	}
 
-	$( '#side-sortables, #normal-sortables, #advanced-sortables' ).on( 'sortstop', maybeShowTabs ).trigger('sortstop');
+	$( '#side-sortables, #normal-sortables, #advanced-sortables' ).on( 'sortstop', maybeShowTabs );
+	maybeShowTabs();
 
 	$( '.block-editor-page #siteorigin_premium_metabox > .postbox-header' ).css( 'height', '44px' );
 } );

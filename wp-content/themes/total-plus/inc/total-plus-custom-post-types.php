@@ -6,11 +6,11 @@
  */
 function total_plus_custom_post_types() {
     $labels = array(
-        'name' => _x('Portfolios', 'post type general name', 'total-plus'),
-        'singular_name' => _x('Portfolio', 'post type singular name', 'total-plus'),
-        'menu_name' => _x('Portfolios', 'admin menu', 'total-plus'),
-        'name_admin_bar' => _x('Portfolio', 'add new on admin bar', 'total-plus'),
-        'add_new' => _x('Add New', 'Portfolio', 'total-plus'),
+        'name' => esc_html_x('Portfolios', 'post type general name', 'total-plus'),
+        'singular_name' => esc_html_x('Portfolio', 'post type singular name', 'total-plus'),
+        'menu_name' => esc_html_x('Portfolios', 'admin menu', 'total-plus'),
+        'name_admin_bar' => esc_html_x('Portfolio', 'add new on admin bar', 'total-plus'),
+        'add_new' => esc_html_x('Add New', 'Portfolio', 'total-plus'),
         'add_new_item' => __('Add New Portfolio', 'total-plus'),
         'new_item' => __('New Portfolio', 'total-plus'),
         'edit_item' => __('Edit Portfolio', 'total-plus'),
@@ -42,8 +42,8 @@ function total_plus_custom_post_types() {
     register_post_type('portfolio', $args);
 
     $labels = array(
-        'name' => _x('Portfolio Types', 'taxonomy general name', 'total-plus'),
-        'singular_name' => _x('Portfolio Type', 'taxonomy singular name', 'total-plus'),
+        'name' => esc_html_x('Portfolio Types', 'taxonomy general name', 'total-plus'),
+        'singular_name' => esc_html_x('Portfolio Type', 'taxonomy singular name', 'total-plus'),
         'search_items' => __('Search Portfolio Types', 'total-plus'),
         'popular_items' => __('Popular Portfolio Types', 'total-plus'),
         'all_items' => __('All Portfolio Types', 'total-plus'),
@@ -71,11 +71,11 @@ function total_plus_custom_post_types() {
     register_taxonomy('portfolio_type', 'portfolio', $args);
 
     $labels = array(
-        'name' => _x('Mega Menus', 'post type general name', 'total-plus'),
-        'singular_name' => _x('Mega Menu', 'post type singular name', 'total-plus'),
-        'menu_name' => _x('Mega Menus', 'admin menu', 'total-plus'),
-        'name_admin_bar' => _x('Mega Menu', 'add new on admin bar', 'total-plus'),
-        'add_new' => _x('Add New', 'Mega Menu', 'total-plus'),
+        'name' => esc_html_x('Mega Menus', 'post type general name', 'total-plus'),
+        'singular_name' => esc_html_x('Mega Menu', 'post type singular name', 'total-plus'),
+        'menu_name' => esc_html_x('Mega Menus', 'admin menu', 'total-plus'),
+        'name_admin_bar' => esc_html_x('Mega Menu', 'add new on admin bar', 'total-plus'),
+        'add_new' => esc_html_x('Add New', 'Mega Menu', 'total-plus'),
         'add_new_item' => __('Add New Mega Menu', 'total-plus'),
         'new_item' => __('New Mega Menu', 'total-plus'),
         'edit_item' => __('Edit Mega Menu', 'total-plus'),

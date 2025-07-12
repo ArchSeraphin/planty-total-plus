@@ -19,7 +19,8 @@
 	<?php esc_html_e( 'WooCommerce Template Builder', 'siteorigin-premium' ); ?>
 </h2>
 <ul class="so-wc-templates-nav">
-	<?php foreach ( $so_wc_templates as $slug => $wc_template ) {
+	<?php
+	foreach ( $so_wc_templates as $slug => $wc_template ) {
 		$url = admin_url( 'admin.php?page=so-wc-templates&tab=' . $slug );
 		$active = $current_tab == $slug;
 		?>
@@ -55,7 +56,8 @@
 					<label for="so-wc-selected-template"><?php esc_html_e( 'Template', 'siteorigin-premium' ); ?></label>
 					<select id="so-wc-selected-template" name="so-wc-selected-template">
 						<option value=""><?php esc_html_e( 'Add New Template', 'siteorigin-premium' ); ?></option>
-						<?php foreach ( $template_posts as $tmplt_post ) {
+						<?php
+						foreach ( $template_posts as $tmplt_post ) {
 							$default_label = '';
 
 							if ( ! empty( $default_template_post_id ) && $default_template_post_id == $tmplt_post->ID ) {
@@ -79,9 +81,12 @@
 						name="so-wc-template-name"
 						placeholder="<?php esc_attr_e( 'Template Title', 'siteorigin-premium' ); ?>"
 						value="<?php echo ! empty( $template_post ) ? $template_post->post_title : ''; ?>"
-						<?php if ( empty( $template_post ) ) {
+						<?php
+						if ( empty( $template_post ) ) {
 							echo 'autofocus';
-						} ?>/>
+						}
+						?>
+						/>
 				</div>
 				<h4><?php esc_html_e( 'Before Product Archive Loop', 'siteorigin-premium' ); ?></h4>
 				<?php
@@ -118,9 +123,12 @@
 						name="so-wc-template-name"
 						placeholder="<?php esc_attr_e( 'Template Title', 'siteorigin-premium' ); ?>"
 						value="<?php echo ! empty( $template_post ) ? esc_attr( $template_post->post_title ) : ''; ?>"
-						<?php if ( empty( $template_post ) ) {
+						<?php
+						if ( empty( $template_post ) ) {
 							echo 'autofocus';
-						} ?>/>
+						}
+						?>
+						/>
 				</div>
 			<?php } ?>
 		<?php } ?>

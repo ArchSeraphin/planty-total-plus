@@ -504,8 +504,10 @@ class SiteOrigin_Premium_Plugin_Accordion {
 				if (
 					! empty( $panel['title_icon_size'] ) &&
 					$panel['title_icon_size'] == 'custom_size' &&
-					! empty( $panel['title_icon_size_width'] ) &&
-					! empty( $panel['title_icon_size_height'] )
+					(
+						! empty( $panel['title_icon_size_width'] ) ||
+						! empty( $panel['title_icon_size_height'] )
+					)
 				) {
 					$panel['title_icon_size'] = array(
 						(int) $panel['title_icon_size_width'],
@@ -520,8 +522,43 @@ class SiteOrigin_Premium_Plugin_Accordion {
 					$panel['title_icon_image_fallback']
 				);
 
+				$inlineDimensions = '';
+				if ( is_array( $panel['title_icon_size'] ) ) {
+					// It's possible the user may have entered only one of the sizes. If that's the case, default to "auto".
+					if ( empty( $panel['title_icon_size'][0] ) ) {
+						$panel['title_icon_size'][0] = 'auto';
+					}
+
+					if ( empty( $panel['title_icon_size'][1] ) ) {
+						$panel['title_icon_size'][1] = 'auto';
+					}
+
+					$size = array(
+						$panel['title_icon_size'][0],
+						$panel['title_icon_size'][1],
+					);
+
+					$inlineDimensions = sprintf(
+						'style="width: %s; height: %s;"',
+						is_numeric( $panel['title_icon_size'][0] ) ? $panel['title_icon_size'][0] . 'px' : $panel['title_icon_size'][0],
+						is_numeric( $panel['title_icon_size'][1] ) ? $panel['title_icon_size'][1] . 'px' : $panel['title_icon_size'][1]
+					);
+				} else {
+					$size = array(
+						$src[1],
+						$src[2],
+					);
+				}
+
 				if ( ! empty( $src ) ) {
-					$panel[ $position_key ] = '<img src="' . esc_url( $src[0] ) . '" class="sow-accordion-icon-image ' . ( $size != 'thumbnail' ? 'sow-accordion-icon-image-custom' : '' ) . '">';
+					$panel[ $position_key ] = sprintf(
+						'<img src="%s" class="sow-accordion-icon-image %s" %s %s %s />',
+						esc_url( $src[0] ),
+						$panel['title_icon_size'] !== 'thumbnail' ? ' sow-accordion-icon-image-custom' : '',
+						$size[0] ? 'width="' . esc_attr( $size[0] ) . '"' : '',
+						$size[1] ? 'height="' . esc_attr( $size[1] ) . '"' : '',
+						$inlineDimensions
+					);
 				}
 			}
 

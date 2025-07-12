@@ -26,9 +26,13 @@
 
 			foreach ( $sections as $section_id => $section_title ) {
 				?>
-				<li <?php if ( $filter == $section_id ) {
+				<li
+				<?php
+				if ( $filter == $section_id ) {
 					echo 'class="active-section"';
-				} ?>>
+				}
+				?>
+				>
 					<a href="#" data-section="<?php echo esc_attr( $section_id ); ?>">
 						<?php echo esc_html( $section_title ); ?>
 					</a>
@@ -42,25 +46,30 @@
 
 	<div id="addons-list" data-action-url="<?php echo esc_url( $action_url ); ?>">
 
-		<?php foreach ( $addons as $section_id => $section_addons ) { ?>
-			<?php foreach ( $section_addons as $addon ) { ?>
+		<?php
+		foreach ( $addons as $section_id => $section_addons ) {
+			foreach ( $section_addons as $addon ) {
+				$section_details = apply_filters( 'siteorigin_premium_addon_section_link-' . $addon['ID'], array() );
+				?>
 				<div class="so-addon-wrap">
 					<div
 						class="so-addon so-addon-is-<?php echo $addon['Active'] ? 'active' : 'inactive'; ?>"
 						data-id="<?php echo esc_attr( $addon['ID'] ); ?>"
 						data-section="<?php echo esc_attr( $section_id ); ?>"
-						>
+						<?php if ( ! empty( $section_details ) && ! empty( $section_details['show_settings_on_activation'] ) ) { ?>
+							data-show-settings-on-activate="true"
+						<?php } ?>
+					>
 
 						<?php
 						$banner = '';
-
-							if ( file_exists( SiteOrigin_Premium::dir_path( $addon['File'] ) . 'assets/banner.png' ) ) {
-								$banner = SiteOrigin_Premium::dir_url( $addon['File'] ) . 'assets/banner.png';
-							} elseif ( file_exists( SiteOrigin_Premium::dir_path( $addon['File'] ) . 'assets/banner.svg' ) ) {
-								$banner = SiteOrigin_Premium::dir_url( $addon['File'] ) . 'assets/banner.svg';
-							}
-							$banner = apply_filters( 'siteorigin_premium_addon_banner', $banner, $addon );
-							?>
+						if ( file_exists( SiteOrigin_Premium::dir_path( $addon['File'] ) . 'assets/banner.png' ) ) {
+							$banner = SiteOrigin_Premium::dir_url( $addon['File'] ) . 'assets/banner.png';
+						} elseif ( file_exists( SiteOrigin_Premium::dir_path( $addon['File'] ) . 'assets/banner.svg' ) ) {
+							$banner = SiteOrigin_Premium::dir_url( $addon['File'] ) . 'assets/banner.svg';
+						}
+						$banner = apply_filters( 'siteorigin_premium_addon_banner', $banner, $addon );
+						?>
 
 						<?php if ( ! empty( $addon['Video'] ) ) { ?>
 							<div class="js-modal-video" data-video-id="<?php echo esc_attr( $addon['Video'] ); ?>" style="display:inline-block; white-space:nowrap;">
@@ -77,7 +86,7 @@
 
 						<div class="so-addon-text">
 
-							<div class="so-addon-active-indicator"><?php esc_html_e( 'Active', 'so-addons-bundle' ); ?></div>
+							<div class="so-addon-active-indicator"><?php esc_html_e( 'Active', 'siteorigin-premium' ); ?></div>
 
 							<h3 class="so-addon-name"><?php echo esc_html( $addon['Name'] ); ?></h3>
 
@@ -98,7 +107,9 @@
 							<?php
 							if ( ! empty( $addon['Tags'] ) ) {
 								$tags = array_map( 'trim', explode( ',', $addon['Tags'] ) );
-								?><ul class="so-addon-tags"><?php
+								?>
+								<ul class="so-addon-tags">
+								<?php
 								foreach ( $tags as $tag ) {
 									?>
 									<li>
@@ -108,34 +119,44 @@
 									</li>
 									<?php
 								}
-								?></ul><?php
+								?>
+								</ul>
+								<?php
 							}
 							?>
 
 							<div class="so-addon-action-links">
 								<?php if ( ! empty( $addon['CanEnable'] ) ) { ?>
 									<div class="so-addon-toggle-active">
-										<button class="button-secondary so-addon-activate" data-status="1"><?php esc_html_e( 'Activate', 'so-addons-bundle' ); ?></button>
-										<button class="button-secondary so-addon-deactivate" data-status="0"><?php esc_html_e( 'Deactivate', 'so-addons-bundle' ); ?></button>
+										<button class="button-secondary so-addon-activate" data-status="1"><?php esc_html_e( 'Activate', 'siteorigin-premium' ); ?></button>
+										<button class="button-secondary so-addon-deactivate" data-status="0"><?php esc_html_e( 'Deactivate', 'siteorigin-premium' ); ?></button>
 									</div>
 								<?php } ?>
 
 								<?php if ( ! empty( $addon['has_settings'] ) ) { ?>
-									<button class="button-secondary so-addon-settings" data-form-url="<?php echo esc_url( $addon['form_url'] ); ?>"<?php if ( empty( $addon['Active'] ) ) {
+									<button class="button-secondary so-addon-settings" data-form-url="<?php echo esc_url( $addon['form_url'] ); ?>"
+									<?php
+									if ( empty( $addon['Active'] ) ) {
 										echo ' style="display: none;"';
-									} ?>>
-										<?php esc_html_e( 'Settings', 'so-addons-bundle' ); ?>
+									}
+									?>
+									>
+										<?php esc_html_e( 'Settings', 'siteorigin-premium' ); ?>
 									</button>
 								<?php } ?>
 
 								<?php
-								$section_link = apply_filters( 'siteorigin_premium_addon_section_link-' . $addon['ID'], array() );
-
-								if ( ! empty( $section_link ) ) {
+								if (
+									! empty( $section_details ) &&
+									! empty( $section_details['url'] ) &&
+									! empty( $section_details['label'] )
+								) {
 									?>
-									<a href="<?php echo esc_url( $section_link['url'] ); ?>" class="so-section-link button-secondary"><?php esc_html_e( $section_link['label'] ); ?></a>
+									<a href="<?php echo esc_url( $section_details['url'] ); ?>" class="so-section-link button-secondary">
+										<?php echo esc_html( $section_details['label'], 'siteorigin-premium' ); ?>
+									</a>
 									<?php
-									}
+								}
 								?>
 								<?php do_action( 'siteorigin_premium_addons_action_links', $addon ); ?>
 
@@ -202,7 +223,15 @@
 
 		<div class="so-toolbar">
 			<div class="so-buttons">
-				<button class="button-primary so-save"><?php esc_html_e( 'Save', 'siteorigin-premium' ); ?></button>
+				<button type="button" class="button-primary so-save">
+					<?php
+					if ( class_exists( 'SiteOrigin_Widgets_Bundle' ) ) {
+						esc_html_e( 'Save', 'siteorigin-premium' );
+					} else {
+						esc_html_e( 'Close', 'siteorigin-premium' );
+					}
+					?>
+				</button>
 			</div>
 		</div>
 	</div>

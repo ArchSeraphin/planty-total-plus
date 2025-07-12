@@ -75,8 +75,17 @@ class SiteOrigin_Premium_Plugin_Cpt_Builder {
 				'public' => false,
 				'publicly_queryable' => false,
 				'show_ui' => true,
-				'supports' => array( 'title', 'editor', 'so-page-settings' ),
+				'supports' => array( 'title', 'editor' ),
 				'show_in_menu' => 'tools.php',
+				'labels' => array(
+					'name' => __( 'Post Types', 'siteorigin-premium' ),
+					'singular_name' => __( 'Post Type', 'siteorigin-premium' ),
+					'add_new_item' => __( 'Add New Post Type', 'siteorigin-premium' ),
+					'edit_item' => __( 'Edit Post Type', 'siteorigin-premium' ),
+					'new_item' => __( 'New Post Type', 'siteorigin-premium' ),
+					'all_items' => __( 'All Post Types', 'siteorigin-premium' ),
+					'menu_name' => __( 'Post Types', 'siteorigin-premium' ),
+				),
 			) );
 		}
 	}
@@ -145,6 +154,14 @@ class SiteOrigin_Premium_Plugin_Cpt_Builder {
 					continue;
 				}
 
+				$supports = array( 'editor', 'so-cpt-builder', 'so-page-settings' );
+				if (
+					! empty( $settings['supports'] ) &&
+					is_array( $settings['supports'] )
+				) {
+					$supports = array_merge( $supports, $settings['supports'] );
+				}
+
 				// Register the post types
 				register_post_type(
 					$slug,
@@ -159,7 +176,7 @@ class SiteOrigin_Premium_Plugin_Cpt_Builder {
 							'hierarchical' => ! empty( $settings['hierarchical'] ) ? $settings['hierarchical'] : false,
 							'has_archive' => $settings['has_archive'],
 							'exclude_from_search' => ! empty( $settings['exclude_from_search'] ) ? $settings['exclude_from_search'] : false,
-							'supports' => array_merge( $settings['supports'], array( 'editor', 'so-cpt-builder' ) ),
+							'supports' => $supports,
 							'menu_icon' => $settings['icon'],
 							'show_ui' => isset( $settings['show_in_admin'] ) ? $settings['show_in_admin'] : true,
 						),
@@ -486,7 +503,7 @@ class SiteOrigin_Premium_Plugin_Cpt_Builder {
 
 				foreach ( $panels_data['widgets'] as &$widget ) {
 					if ( ! empty( $widget['panels_info']['widget_id'] ) &&
-						 isset( $cpt_widgets[ $widget['panels_info']['widget_id'] ] ) ) {
+						isset( $cpt_widgets[ $widget['panels_info']['widget_id'] ] ) ) {
 						$cpt_widget = $cpt_widgets[ $widget['panels_info']['widget_id'] ];
 						$is_edited = $this->widget_diff(
 							$widget,
@@ -571,7 +588,7 @@ class SiteOrigin_Premium_Plugin_Cpt_Builder {
 			$post_widgets = $this->get_widgets_by_id( $panels_data );
 
 			foreach ( $cpt_panels_data['widgets'] as &$widget ) {
-				if ( isset( $widget['panels_info']['style']['so_cpt_readonly'] )  ) {
+				if ( isset( $widget['panels_info']['style']['so_cpt_readonly'] ) ) {
 					$widget['panels_info']['read_only'] = $widget['panels_info']['style']['so_cpt_readonly'];
 				}
 

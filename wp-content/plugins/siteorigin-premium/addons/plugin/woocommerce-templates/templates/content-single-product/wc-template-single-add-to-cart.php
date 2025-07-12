@@ -35,14 +35,14 @@ class SiteOrigin_Premium_WooCommerce_Template_Single_Add_To_Cart extends WP_Widg
 		$field_name = $this->get_field_name( 'add_to_cart_single' );
 		?>
 		<div class="so-wc-widget-form-input">
-			<label for="<?php esc_attr_e( $field_id ); ?>">
+			<label for="<?php echo esc_attr( $field_id ); ?>">
 				<?php esc_html_e( 'Single Product Button Text', 'siteorigin-premium' ); ?>
 			</label>
 			<input
 				type="text"
-				id="<?php esc_attr_e( $field_id ); ?>"
-				name="<?php esc_attr_e( $field_name ); ?>"
-				value="<?php esc_attr_e( $add_to_cart_single ); ?>"/>
+				id="<?php echo esc_attr( $field_id ); ?>"
+				name="<?php echo esc_attr( $field_name ); ?>"
+				value="<?php echo esc_attr( $add_to_cart_single ); ?>"/>
 		</div>
 		<?php
 	}

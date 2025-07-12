@@ -24,18 +24,18 @@ class RWMB_Media_Field extends RWMB_File_Field {
 			'rwmb-media',
 			'i18nRwmbMedia',
 			array(
-				'add'                => apply_filters( 'rwmb_media_add_string', _x( '+ Add Media', 'media', 'total-plus' ) ),
-				'single'             => apply_filters( 'rwmb_media_single_files_string', _x( ' file', 'media', 'total-plus' ) ),
-				'multiple'           => apply_filters( 'rwmb_media_multiple_files_string', _x( ' files', 'media', 'total-plus' ) ),
-				'remove'             => apply_filters( 'rwmb_media_remove_string', _x( 'Remove', 'media', 'total-plus' ) ),
-				'edit'               => apply_filters( 'rwmb_media_edit_string', _x( 'Edit', 'media', 'total-plus' ) ),
-				'view'               => apply_filters( 'rwmb_media_view_string', _x( 'View', 'media', 'total-plus' ) ),
-				'noTitle'            => _x( 'No Title', 'media', 'total-plus' ),
+				'add'                => apply_filters( 'rwmb_media_add_string', esc_html_x( '+ Add Media', 'media', 'total-plus' ) ),
+				'single'             => apply_filters( 'rwmb_media_single_files_string', esc_html_x( ' file', 'media', 'total-plus' ) ),
+				'multiple'           => apply_filters( 'rwmb_media_multiple_files_string', esc_html_x( ' files', 'media', 'total-plus' ) ),
+				'remove'             => apply_filters( 'rwmb_media_remove_string', esc_html_x( 'Remove', 'media', 'total-plus' ) ),
+				'edit'               => apply_filters( 'rwmb_media_edit_string', esc_html_x( 'Edit', 'media', 'total-plus' ) ),
+				'view'               => apply_filters( 'rwmb_media_view_string', esc_html_x( 'View', 'media', 'total-plus' ) ),
+				'noTitle'            => esc_html_x( 'No Title', 'media', 'total-plus' ),
 				'loadingUrl'         => admin_url( 'images/spinner.gif' ),
 				'extensions'         => self::get_mime_extensions(),
-				'select'             => apply_filters( 'rwmb_media_select_string', _x( 'Select Files', 'media', 'total-plus' ) ),
-				'or'                 => apply_filters( 'rwmb_media_or_string', _x( 'or', 'media', 'total-plus' ) ),
-				'uploadInstructions' => apply_filters( 'rwmb_media_upload_instructions_string', _x( 'Drop files here to upload', 'media', 'total-plus' ) ),
+				'select'             => apply_filters( 'rwmb_media_select_string', esc_html_x( 'Select Files', 'media', 'total-plus' ) ),
+				'or'                 => apply_filters( 'rwmb_media_or_string', esc_html_x( 'or', 'media', 'total-plus' ) ),
+				'uploadInstructions' => apply_filters( 'rwmb_media_upload_instructions_string', esc_html_x( 'Drop files here to upload', 'media', 'total-plus' ) ),
 			)
 		);
 	}

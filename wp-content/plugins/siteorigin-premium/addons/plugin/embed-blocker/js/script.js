@@ -19,8 +19,8 @@ jQuery( function( $ ) {
 		return string;
 	}
 
-	const SiteOriginUnblockContent = function( siteSlug ) {
-		const validTypes = [ 'blockquote', 'iframe', 'script', 'div' ];
+	const SiteOriginUnblockContent = function( siteSlug, onLoad = true ) {
+		const validTypes = [ 'class', 'blockquote', 'iframe', 'script', 'div' ];
 
 		let blockedContent;
 		if ( siteSlug ) {
@@ -41,6 +41,13 @@ jQuery( function( $ ) {
 				return true;
 			}
 
+			// If we're not unblocking content onLoad, we need to reload the page.
+			// Not ideal, but this ensures the best overall compatibility.
+			if ( ! onLoad && type === 'class' ) {
+				window.location.reload();
+				return;
+			}
+
 			if ( type == 'script' ) {
 				// jQuery won't load scripts added to the DOM, so we need to do this using vanilla JS.
 				const script = document.createElement( 'script' );
@@ -49,7 +56,10 @@ jQuery( function( $ ) {
 
 				return true;
 			}
-			const element = $( `<${ SiteOriginSanitizeElementData( type ) } />` );
+
+			const tag = type === 'class' ? SiteOriginSanitizePreventPrototypePollution( $$.data( 'tag' ) ) : type;
+			const element = $( `<${ SiteOriginSanitizeElementData( tag ) } />` );
+
 			$.each( $$.prop( 'attributes' ), function() {
 				SiteOriginSanitizePreventPrototypePollution( this.name );
 				SiteOriginSanitizePreventPrototypePollution( this.value );
@@ -64,6 +74,11 @@ jQuery( function( $ ) {
 
 			element.show();
 			$$.replaceWith( element );
+		} );
+
+		$( document ).trigger( 'siteorigin_embed_blocker_unblock', {
+			siteSlug,
+			onLoad,
 		} );
 	}
 
@@ -102,6 +117,6 @@ jQuery( function( $ ) {
 		const expiration = new Date( Date.now() + 60 * 60 * 24 * 30 );
 		document.cookie = `siteorigin-premium-content-blocker-${ SiteOriginSanitizeElementData( siteSlug ) }=true; path=/; domain=${ window.location.hostname }; SameSite=Strict; expires=${ expiration.toUTCString() }`;
 
-		SiteOriginUnblockContent( siteSlug );
+		SiteOriginUnblockContent( siteSlug, false );
 	} );
 } );

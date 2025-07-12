@@ -80,9 +80,23 @@ SiteOriginPremium.setupAnimations = function ( $ ) {
 		var animation = $$.data( 'so-animation' );
 		animation.$el = $$;
 
-		// Set the animation duration
-		var duration = parseFloat( animation.duration );
-		if ( !isNaN( duration ) ) {
+		let duration = parseFloat( animation.duration ) || 1;
+
+		const $mainSlider = $$.closest( '.sow-slider-images' );
+		let sliderDuration = false;
+		if (
+			$mainSlider.length &&
+			animation.animation &&
+			animation.event === 'slide_display'
+		) {
+			// To prevent display issues, prevent the animation duration being
+			// longer than the slider duration.
+			sliderDuration = parseInt( $mainSlider.data( 'settings' ).speed ) / 100 || 1;
+
+			duration = Math.min( duration, sliderDuration );
+		}
+
+		if ( ! isNaN( duration ) ) {
 			$$.css( {
 				'-webkit-animation-duration': duration + 's',
 				'animation-duration': duration + 's',
@@ -153,18 +167,33 @@ SiteOriginPremium.setupAnimations = function ( $ ) {
 		}
 
 		if ( animation.animation_type_slide_out ) {
-			$$.closest( '.sow-slider-images' ).on( 'cycle-before', function ( e ) {
+			$$.closest( '.sow-slider-images' ).on( 'cycle-before', function( e ) {
 				if ( animation.animation_type_slide_out ) {
-					if ( $$.closest( '.sow-slider-image ' ).hasClass( 'cycle-slide-active' ) ) {
-					$$
-						.addClass( 'animate__animated animate__' + animation.animation_type_slide_out )
-						.one( animationEnd, function () {
-							$$.removeClass( 'animate__animated animate__' + animation.animation_type_slide_out );
-						} )
-					}
-				}
+					const $slide = $$.closest( '.sow-slider-image' );
 
-				if ( animation.animation && animation.hide ) {
+					if ( $slide.hasClass( 'cycle-slide-active' ) ) {
+						// Stop any animations currently running on other slides.
+						$slide.siblings( '.sow-slider-image' ).find( '[data-so-animation][class*="animate_"]' ).filter(function() {
+							const animData = $( this ).data( 'so-animation' );
+							return animData && animData.event === 'slide_display';
+						} ).each( function() {
+							stopSlideAnimation.call(
+								this,
+								null,
+								animation.hide
+							);
+						} );
+
+						$$
+							.addClass( 'animate__animated animate__' + animation.animation_type_slide_out )
+							.one( animationEnd, function () {
+								$$.removeClass( 'animate__animated animate__' + animation.animation_type_slide_out );
+								if ( animation.hide ) {
+									$$.css( 'opacity', 0 );
+								}
+							} )
+					}
+				} else if ( animation.hide ) {
 					$$.css( 'opacity', 0 );
 				}
 			} );
@@ -176,6 +205,15 @@ SiteOriginPremium.setupAnimations = function ( $ ) {
 			}
 		}
 	} );
+
+	stopSlideAnimation = function ( e, animationHide ) {
+		$( this )
+			.removeClass( 'animate__animated' )
+			.removeClass( ( index, className ) => {
+				return ( className.match( /(^|\s)animate__\S+/g ) || []).join( ' ' );
+			} )
+			.css( 'opacity', animationHide ? 0 : 1 );
+	};
 };
 
 jQuery( function ( $ ) {

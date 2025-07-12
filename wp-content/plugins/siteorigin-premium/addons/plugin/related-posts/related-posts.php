@@ -15,10 +15,7 @@ Minimum Version: so-widgets-bundle 1.62.3
 
 class SiteOrigin_Premium_Plugin_Related_Posts {
 	public function __construct() {
-		if ( defined( 'SOW_BUNDLE_VERSION' ) ) {
-			add_filter( 'siteorigin_premium_metabox_form_options', array( $this, 'metabox_options' ), 11, 1 );
-			add_filter( 'the_content', array( $this, 'add_related_posts' ), 13, 1 );
-		}
+		add_action( 'init', array( $this, 'init' ) );
 	}
 
 	public static function single() {
@@ -27,8 +24,27 @@ class SiteOrigin_Premium_Plugin_Related_Posts {
 		return empty( $single ) ? $single = new self() : $single;
 	}
 
+	public function init() {
+		if (
+			! defined( 'SOW_BUNDLE_VERSION' ) ||
+			! class_exists( 'SiteOrigin_Widget_Blog_Widget' )
+		) {
+			return;
+		}
+
+		add_filter( 'siteorigin_premium_metabox_form_options', array( $this, 'metabox_options' ), 11, 1 );
+		add_filter( 'the_content', array( $this, 'add_related_posts' ), 13, 1 );
+	}
+
 	public function get_settings_form() {
-		if ( version_compare( SOW_BUNDLE_VERSION, '1.62.3', '>=' ) ) {
+		if ( ! class_exists( 'SiteOrigin_Widget_Blog_Widget' ) ) {
+			$settings = array(
+				'html' => array(
+					'type' => 'html',
+					'markup' => __( 'This addon requires the SiteOrigin Blog widget.', 'siteorigin-premium' ),
+				),
+			);
+		} elseif ( version_compare( SOW_BUNDLE_VERSION, '1.62.3', '>=' ) ) {
 			$settings = array(
 				'types' => array(
 					'type' => 'checkboxes',
@@ -324,8 +340,10 @@ class SiteOrigin_Premium_Plugin_Related_Posts {
 
 		$this->add_related_posts_hooks();
 
-		ob_start();
 		global $wp_widget_factory;
+
+		ob_start();
+
 		$the_widget = $wp_widget_factory->widgets['SiteOrigin_Widget_Blog_Widget'];
 		$the_widget->widget( array(), $settings['widget'] );
 

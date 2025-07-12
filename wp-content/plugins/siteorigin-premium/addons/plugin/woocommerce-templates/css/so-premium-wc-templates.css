@@ -73,8 +73,9 @@
   width: 100%;
 }
 #so-premium-wc-template-form .action-button {
+  align-items: center;
+  display: inline-flex;
   line-height: 25px;
-  padding-top: 3px;
 }
 #so-premium-wc-template-form.so-premium-wc-tab-content-product > h4 {
   margin-bottom: 0;
@@ -89,9 +90,8 @@
   justify-content: space-between;
 }
 .so-panels-dialog.so-panels-dialog-add-widget .widget-type-list .widget-type .widget-icon.so-wc-widget-icon {
-  background-image: url('../../../../img/menu-icon.svg');
-  background-position: -6px 0;
-  background-size: 40px;
+  background-image: url('../../../../img/addo-icon-tight.svg');
+  background-size: 28px 20px;
   width: 28px;
 }
 .so-panels-dialog.so-panels-dialog-edit-widget .so-wc-widget-form-input {

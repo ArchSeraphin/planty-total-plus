@@ -165,4 +165,33 @@ class SiteOrigin_Premium_Utility {
 
 		return true;
 	}
+
+	/**
+	 * Generate date format options for blog settings.
+	 *
+	 * This returns an associative array with the date format as the key and a
+	 * descriptive string (including the current date example) as the value.
+	 *
+	 * @return array An array of date formats for by addons that include date formats.
+	 */
+	public static function date_format_options(): array {
+		return array(
+			'' => sprintf(
+				__( 'Default (%s)', 'siteorigin-premium' ),
+				date( get_option( 'date_format' ) )
+			),
+			'Y-m-d' => sprintf(
+				__( 'yyyy-mm-dd (%s)', 'siteorigin-premium' ),
+				date( 'Y-m-d' )
+			),
+			'm/d/Y' => sprintf(
+				__( 'mm/dd/yyyy (%s)', 'siteorigin-premium' ),
+				date( 'm/d/Y' )
+			),
+			'd/m/Y' => sprintf(
+				__( 'dd/mm/yyyy (%s)', 'siteorigin-premium' ),
+				date( 'd/m/Y' )
+			),
+		);
+	}
 }

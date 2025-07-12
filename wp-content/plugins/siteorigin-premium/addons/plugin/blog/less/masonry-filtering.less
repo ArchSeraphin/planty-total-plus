@@ -1,0 +1,38 @@
+@filter_categories_font: default;
+@filter_categories_font_size: default;
+@filter_categories_font_style: default;
+@filter_categories_font_weight: 600;
+@filter_categories_color: default;
+@filter_categories_color_hover: default;
+@filter_categories_text_transform: default;
+@filter_categories_selected_border_color: default;
+@filter_categories_selected_border_thickness: default;
+
+.sow-masonry-filter-terms button {
+	border-radius: 0;
+	border: none;
+	border-bottom: @filter_categories_selected_border_thickness solid transparent;
+	color: @filter_categories_color;
+	font-family: @filter_categories_font;
+	font-size: @filter_categories_font_size;
+	font-style: @filter_categories_font_style;
+	font-weight: @filter_categories_font_weight;
+	letter-spacing: 1px;
+	line-height: normal;
+	text-transform: @filter_categories_text_transform;
+
+	@media (max-width: @responsive_breakpoint) {
+		margin: 0 10px 5px 0;
+	}
+
+	&:hover,
+	&:focus {
+		appearance: none;
+		box-shadow: none;
+		color: @filter_categories_color_hover;
+	}
+
+	&.active {
+		border-bottom-color: @filter_categories_selected_border_color;
+	}
+}

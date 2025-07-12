@@ -70,25 +70,33 @@ class SiteOrigin_Premium_Plugin_Blog {
 	}
 
 	public function setup() {
-		if ( class_exists( 'SiteOrigin_Widget_Blog_Widget' ) ) {
-			add_action( 'siteorigin_widgets_enqueue_frontend_scripts_sow-blog', array( $this, 'enqueue_assets' ), 10, 2 );
-			add_filter( 'siteorigin_widgets_instance_sow-blog', array( $this, 'modify_instance' ) );
-			add_filter( 'siteorigin_widgets_form_options_sow-blog', array( $this, 'add_form_options' ), 10, 2 );
-			add_filter( 'siteorigin_widgets_less_variables_sow-blog', array( $this, 'add_less_variables' ), 1, 3 );
-			add_filter( 'siteorigin_widgets_less_vars_sow-blog', array( $this, 'add_less' ), 20, 3 );
-			add_filter( 'siteorigin_widgets_template_variables_sow-blog', array( $this, 'add_template_variables' ), 10, 4 );
-			add_filter( 'siteorigin_widgets_blog_pagination_markup', array( $this, 'paginate_links' ), 10, 4 );
-			add_action( 'siteorigin_widgets_blog_output_before', array( $this, 'before_output' ) );
-			add_action( 'siteorigin_widgets_blog_output_after', array( $this, 'after_output' ) );
-			add_filter( 'siteorigin_widgets_blog_featured_image_fallback', array( $this, 'add_featured_image_fallback' ), 10, 3 );
-			add_filter( 'siteorigin_widgets_blog_query', array( $this, 'portfolio_filter_posts_featured_image_fallback' ), 9, 2 );
-			add_filter( 'siteorigin_widgets_blog_show_content', array( $this, 'show_post_content' ), 10, 2 );
+		if ( ! class_exists( 'SiteOrigin_Widget_Blog_Widget' ) ) {
+			return;
 		}
+
+		add_action( 'siteorigin_widgets_enqueue_frontend_scripts_sow-blog', array( $this, 'enqueue_assets' ), 10, 2 );
+		add_filter( 'siteorigin_widgets_instance_sow-blog', array( $this, 'modify_instance' ) );
+		add_filter( 'siteorigin_widgets_form_options_sow-blog', array( $this, 'add_form_options' ), 10, 2 );
+		add_filter( 'siteorigin_widgets_less_variables_sow-blog', array( $this, 'add_less_variables' ), 1, 3 );
+		add_filter( 'siteorigin_widgets_less_vars_sow-blog', array( $this, 'add_less' ), 20, 3 );
+		add_filter( 'siteorigin_widgets_template_variables_sow-blog', array( $this, 'add_template_variables' ), 10, 4 );
+		add_filter( 'siteorigin_widgets_blog_pagination_markup', array( $this, 'paginate_links' ), 10, 4 );
+		add_action( 'siteorigin_widgets_blog_output_before', array( $this, 'before_output' ) );
+		add_action( 'siteorigin_widgets_blog_output_after', array( $this, 'after_output' ) );
+		add_filter( 'siteorigin_widgets_blog_featured_image_fallback', array( $this, 'add_featured_image_fallback' ), 10, 3 );
+		add_filter( 'siteorigin_widgets_blog_query', array( $this, 'portfolio_filter_posts_featured_image_fallback' ), 9, 2 );
+		add_filter( 'siteorigin_widgets_blog_show_content', array( $this, 'show_post_content' ), 10, 2 );
+
+		// Masonry Filtering.
+		add_filter( 'siteorigin_widgets_template_file_sow-blog', array( $this, 'masonry_filtering_override_blog_template' ), 10, 2 );
+		add_filter( 'siteorigin_widgets_blog_template_file', array( $this, 'masonry_filtering_override_blog_template' ), 10, 2 );
+		add_filter( 'siteorigin_widgets_blog_templates', array( $this, 'masonry_filtering_add_filter_categories_support' ) );
 	}
 
 	public function enqueue_assets() {
 		wp_enqueue_style( 'siteorigin-premium-blog-addon', plugin_dir_url( __FILE__ ) . 'css/style.css' );
 		wp_register_script( 'siteorigin-premium-blog-addon', plugin_dir_url( __FILE__ ) . 'js/script' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js', array( 'jquery' ) );
+
 		wp_localize_script(
 			'siteorigin-premium-blog-addon',
 			'sowBlogAddon',
@@ -96,11 +104,32 @@ class SiteOrigin_Premium_Plugin_Blog {
 				'ajax-url' => sow_esc_url( wp_nonce_url( admin_url( 'admin-ajax.php' ), 'so-blog-addon-ajax', '_widgets_nonce' ) ),
 			)
 		);
+
+		wp_register_script(
+			'sow-blog-masonry-filtering',
+			plugin_dir_url( __FILE__ ) . 'js/masonry-filtering' . SITEORIGIN_PREMIUM_JS_SUFFIX . '.js',
+			array(
+				'jquery',
+				'jquery-isotope'
+			)
+		);
 	}
 
 	public function modify_instance( $instance ) {
 		if ( ! empty( $instance['design']['pagination_premium']['border_hover_color'] ) ) {
 			$instance['design']['pagination_premium']['border_color_hover'] = $instance['design']['pagination_premium']['border_hover_color'];
+		}
+
+		// Prevent WAF PHP function block.
+		if (
+			is_array( $instance['settings'] ) &&
+			isset( $instance['settings']['date_format'] )
+		) {
+			$instance['settings']['date_output_format'] = $instance['settings']['date_format'];
+
+			// Unlike the WB version of this migration, we don't remove the
+			// old date_format setting. This is to account for a situation
+			// where the user hasn't updated WB.
 		}
 
 		return $instance;
@@ -146,7 +175,7 @@ class SiteOrigin_Premium_Plugin_Blog {
 			$form_options['settings']['fields'],
 			'author',
 			array(
-				'date_format' => array(
+				'date_output_format' => array(
 					'type' => 'select',
 					'label' => __( 'Post Date Format', 'siteorigin-premium' ),
 					'default' => 'default',
@@ -154,15 +183,9 @@ class SiteOrigin_Premium_Plugin_Blog {
 						'active_template[standard,masonry,grid,offset,alternate]' => array( 'slideDown' ),
 						'_else[active_template]' => array( 'slideUp' ),
 					),
-					'options' => array(
-						'' => sprintf( __( 'Default (%s)', 'siteorigin-premium' ), date( get_option( 'date_format' ) ) ),
-						'Y-m-d' => sprintf( __( 'yyyy-mm-dd (%s)', 'siteorigin-premium' ), date( 'Y/m/d' ) ),
-						'm/d/Y' => sprintf( __( 'mm/dd/yyyy (%s)', 'siteorigin-premium' ), date( 'm/d/Y' ) ),
-						'd/m/Y' => sprintf( __( 'dd/mm/yyyy (%s)', 'siteorigin-premium' ), date( 'd/m/Y' ) ),
-					),
+					'options' => SiteOrigin_Premium_Utility::single()->date_format_options(),
 				),
 			)
-
 		);
 
 		// Add featured_image_fallback setting.
@@ -188,16 +211,20 @@ class SiteOrigin_Premium_Plugin_Blog {
 			'type' => 'select',
 			'default' => 'standard',
 			'label' => __( 'Pagination', 'siteorigin-premium' ),
-			'state_emitter' => array(
-				'callback' => 'select',
-				'args' => array( 'pagination' ),
-			),
 			'options' => array(
 				'standard' => __( 'Standard', 'siteorigin-premium' ),
 				'links' => __( 'Previous - Next', 'siteorigin-premium' ),
 				'load' => __( 'Load More', 'siteorigin-premium' ),
 				'infinite' => __( 'Infinite Scrolling', 'siteorigin-premium' ),
 				'disabled' => __( 'Disabled', 'siteorigin-premium' ),
+			),
+			'state_emitter' => array(
+				'callback' => 'select',
+				'args' => array( 'pagination' ),
+			),
+			'state_handler' => array(
+				'active_template[portfolio]' => array( 'slideUp' ),
+				'_else[active_template]' => array( 'slideDown' ),
 			),
 		);
 
@@ -370,6 +397,17 @@ class SiteOrigin_Premium_Plugin_Blog {
 		// Allow for Post Content to be removed.
 		$form_options['settings']['fields']['content']['options']['none'] = __( 'None', 'siteorigin-premium' );
 
+		// Allow Masonry to use filtering.
+		$form_options['settings']['fields']['filter_categories']['state_handler'] = array(
+			'active_template[portfolio,masonry]' => array( 'show' ),
+			'_else[active_template]' => array( 'hide' ),
+		);
+
+		$form_options['design']['fields']['filter_categories']['state_handler'] = array(
+			'filter_categories[show]' => array( 'show' ),
+			'filter_categories[hide]' => array( 'hide' ),
+		);
+
 		return $form_options;
 	}
 
@@ -412,6 +450,25 @@ class SiteOrigin_Premium_Plugin_Blog {
 			$less_vars['pagination_padding'] = ! empty( $instance['design']['pagination_premium']['padding'] ) ? $instance['design']['pagination_premium']['padding'] : '9px 25px 9px 25px';
 		}
 
+		if ( ! self::is_masonry_filtering_enabled( $instance ) ) {
+			return $less_vars;
+		}
+		if ( ! empty( $instance['design']['filter_categories']['font'] ) ) {
+			$font = siteorigin_widget_get_font( $instance['design']['filter_categories']['font'] );
+			$less_vars['filter_categories_font'] = $font['family'];
+
+			if ( ! empty( $font['weight'] ) ) {
+				$less_vars['filter_categories_font_style'] = $font['style'];
+				$less_vars['filter_categories_font_weight'] = $font['weight_raw'];
+			}
+		}
+		$less_vars['filter_categories_font_size'] = ! empty( $instance['design']['filter_categories']['font_size'] ) ? $instance['design']['filter_categories']['font_size'] : '';
+		$less_vars['filter_categories_color'] = ! empty( $instance['design']['filter_categories']['color'] ) ? $instance['design']['filter_categories']['color'] : '';
+		$less_vars['filter_categories_color_hover'] = ! empty( $instance['design']['filter_categories']['color_hover'] ) ? $instance['design']['filter_categories']['color_hover'] : '';
+		$less_vars['filter_categories_text_transform'] = ! empty( $instance['design']['filter_categories']['text_transform'] ) ? 'uppercase' : '';
+		$less_vars['filter_categories_selected_border_color'] = ! empty( $instance['design']['filter_categories']['selected_border_color'] ) ? $instance['design']['filter_categories']['selected_border_color'] : '';
+		$less_vars['filter_categories_selected_border_thickness'] = ! empty( $instance['design']['filter_categories']['selected_border_thickness'] ) ? $instance['design']['filter_categories']['selected_border_thickness'] : '';
+
 		return $less_vars;
 	}
 
@@ -426,6 +483,10 @@ class SiteOrigin_Premium_Plugin_Blog {
 			! empty( $instance['animation']['animation_hide'] )
 		) {
 			$less .= '.sow-blog-posts article { opacity: 0; }';
+		}
+
+		if ( self::is_masonry_filtering_enabled( $instance ) ) {
+			$less .= file_get_contents( plugin_dir_path( __FILE__ ) . 'less/masonry-filtering.less' );
 		}
 
 		return $less;
@@ -468,6 +529,15 @@ class SiteOrigin_Premium_Plugin_Blog {
 			$template_variables['settings']['animation'] = $instance['animation'];
 		}
 
+		if ( self::is_masonry_filtering_enabled( $instance ) ) {
+			// If the user is using an older version of WB, we'll need to set
+			// up the terms here. In newer versions, this is done in the widget.
+			if ( empty( $template_variables['template_settings']['terms'] ) ) {
+				$template_variables['template_settings']['terms'] = SiteOrigin_Widget_Blog_Widget::portfolio_get_terms( $instance );
+			}
+
+			wp_enqueue_script( 'sow-blog-masonry-filtering' );
+		}
 
 		return $template_variables;
 	}
@@ -642,4 +712,84 @@ class SiteOrigin_Premium_Plugin_Blog {
 		return $show_content;
 	}
 
+	/**
+	 * Check if masonry filtering is enabled for the given instance.
+	 *
+	 * This method checks if the template is set to 'masonry' and if the
+	 * 'filter_categories' setting is not empty.
+	 *
+	 * @param array $instance The instance settings array.
+	 *
+	 * @return bool True if masonry filtering is enabled, false otherwise.
+	 */
+	private static function is_masonry_filtering_enabled( $instance ) {
+		return (
+			$instance['template'] === 'masonry' &&
+			! empty( $instance['settings']['filter_categories'] )
+		);
+	}
+
+	/**
+	 * Override the blog template for masonry filtering.
+	 *
+	 * This method overrides the blog template if the 'masonry' template and
+	 * filter categories are enabled. Depending on which filter is calling
+	 * this method, it will return default template files. If the filter
+	 * that calls this method is 'siteorigin_widgets_template_file_sow-blog',
+	 * it will return the overridden template file for the main blog template.
+	 * Otherwise, it'll return the loop template file for the blog template.
+	 *
+	 * @param string $template_file - The default template file path.
+	 * @param array $instance - The instance configuration array.
+	 *
+	 * @return string - The path to the overridden template file or the default template file.
+	 */
+	public function masonry_filtering_override_blog_template( $template_file,
+	$instance ) {
+		if ( ! self::is_masonry_filtering_enabled( $instance ) ) {
+			return $template_file;
+		}
+
+		if ( current_filter() === 'siteorigin_widgets_template_file_sow-blog' ) {
+			return plugin_dir_path( __FILE__ ) . 'tpl/masonry-filtering.php';
+		}
+
+		return plugin_dir_path( __FILE__ ) . 'tpl/masonry-filtering-loop-sow-blog.php';
+	}
+
+	/**
+	 * Add filter categories support to the masonry template.
+	 *
+	 * This function adds support for filter categories to the masonry
+	 * template by adding the required data to the masonry template.
+	 *
+	 * @param array $templates The existing templates array.
+	 *
+	 * @return array The modified templates array with filter
+	 * categories support for the masonry template.
+	 */
+	public function masonry_filtering_add_filter_categories_support( $templates ) {
+		if (
+			empty( $templates['masonry'] ) ||
+			empty( $templates['masonry']['values'] ) ||
+			empty( $templates['masonry']['values']['settings'] ) ||
+			empty( $templates['masonry']['values']['design'] )
+		) {
+			return $templates;
+		}
+
+		$templates['masonry']['values']['settings']['filter_categories'] = false;
+
+		$templates['masonry']['values']['design']['filter_categories'] = array(
+			'color' => '#929292',
+			'color_hover' => '#2d2d2d',
+			'font' => 'default',
+			'font_size' => '11',
+			'text_transform' => 'true',
+			'selected_border_color' => '#2d2d2d',
+			'selected_border_thickness' => 2
+		);
+
+		return $templates;
+	}
 }

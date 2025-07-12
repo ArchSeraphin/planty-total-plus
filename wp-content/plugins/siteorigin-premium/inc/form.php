@@ -107,7 +107,9 @@ if ( class_exists( 'SiteOrigin_Widget' ) ) {
 		}
 
 		public function form( $instance ) {
-			?><p><?php
+			?>
+			<p>
+			<?php
 			printf(
 				esc_html( 'Please, install and active the %sSiteOrigin Widgets Bundle%s plugin to use these addon settings.' ),
 				sprintf(
@@ -116,7 +118,9 @@ if ( class_exists( 'SiteOrigin_Widget' ) ) {
 				),
 				'</a>'
 			);
-			?></p><?php
+			?>
+			</p>
+			<?php
 		}
 
 		public function update( $new_instance, $old_instance ) {

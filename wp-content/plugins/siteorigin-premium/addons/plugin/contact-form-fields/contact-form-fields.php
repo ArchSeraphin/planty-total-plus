@@ -161,8 +161,8 @@ class SiteOrigin_Premium_Plugin_Contact_Form_Fields {
 		siteorigin_widgets_array_insert( $fields, 'required', array(
 			'merge_tag' => array(
 				'type'    => 'text',
-				'label'   => __( 'Merge Tag', 'so-widgets-bundle' ),
-				'description'   => __( 'Merge tags can added to the Subject, Success, and Auto Responder messages. Insert your tag name in the field above and output the tag by wrapping it in square brackets, for [example].', 'so-widgets-bundle' ),
+				'label'   => __( 'Merge Tag', 'siteorigin-premium' ),
+				'description'   => __( 'Merge tags can added to the Subject, Success, and Auto Responder messages. Insert your tag name in the field above and output the tag by wrapping it in square brackets, for [example].', 'siteorigin-premium' ),
 			),
 		) );
 
@@ -184,6 +184,15 @@ class SiteOrigin_Premium_Plugin_Contact_Form_Fields {
 						'label' => __( 'Show Google Map', 'siteorigin-premium' ),
 						'default' => true,
 						'description' => __( 'Clicking on the map will guess the closest address and the map will try to display the address entered into the text input', 'siteorigin-premium' ),
+					),
+					'map_id' => array(
+						'type' => 'text',
+						'label' => __( 'Map ID', 'siteorigin-premium' ),
+						'description' => sprintf(
+							__( 'A Map ID allows you to manage your map styles using the %sGoogle Cloud Console%s. This is only used if Map Styles are not set.', 'siteorigin-premium' ),
+							'<a href="https://console.cloud.google.com/google/maps-apis/studio/maps" target="_blank" rel="noopener noreferrer">',
+							'</a>'
+						),
 					),
 					'default_location' => array(
 						'type' => 'location',
@@ -241,6 +250,11 @@ class SiteOrigin_Premium_Plugin_Contact_Form_Fields {
 							'weekends' => __( 'Weekends', 'siteorigin-premium' ),
 							'weekdays' => __( 'Weekdays', 'siteorigin-premium' ),
 						),
+					),
+					'datepicker_prefill' => array(
+						'type' => 'checkbox',
+						'label' => __( 'Prefill Date Picker With Current Date', 'siteorigin-premium' ),
+						'default' => false,
 					),
 					'disabled_dates' => array(
 						'type' => 'text',
@@ -456,20 +470,63 @@ class SiteOrigin_Premium_Plugin_Contact_Form_Fields {
 		$fields = empty( $instance['fields'] ) ? array() : $instance['fields'];
 
 		foreach ( $fields as $field ) {
-			if ( $field['type'] == 'location' ) {
-				$less_file = siteorigin_widget_get_plugin_dir_path( 'google-map' ) . 'styles/default.less';
-
-				if ( substr( $less_file, -5 ) == '.less' && file_exists( $less_file ) ) {
-					$maps_less = file_get_contents( $less_file );
-
-					// Prevent error due to importing mixins twice.
-					$less .= str_replace( '@import "../../../base/less/mixins";', '', $maps_less );
-					break;
-				}
+			if ( $field['type'] !== 'location' ) {
+				continue;
 			}
+
+			$less_file = siteorigin_widget_get_plugin_dir_path( 'google-map' ) . 'styles/default.less';
+
+			if ( substr( $less_file, -5 ) == '.less' && file_exists( $less_file ) ) {
+				$maps_less = file_get_contents( $less_file );
+
+				// Prevent error due to importing mixins twice.
+				$less .= str_replace( '@import "../../../base/less/mixins";', '', $maps_less );
+			}
+
+			break;
+		}
+
+		if ( ! empty( $instance['design']['fields']['multi_margin'] ) ) {
+			$field_margin = $this->sanitize_field_margin( $instance['design']['fields']['multi_margin'] );
+
+			$less .= '.sow-google-map-canvas {
+				margin: ' . $field_margin . ';
+			}';
 		}
 
 		return $less;
+	}
+
+	/**
+	 * Sanitize field margin string.
+	 *
+	 * Takes a space-separated margin string (e.g. "23px 24% 0px 1px")
+	 * and ensures each value has a valid number and unit. Invalid
+	 * values are defaulted to "0px".
+	 *
+	 * @param string $field_margin Space-separated margin values with units
+	 *
+	 * @return string Sanitized margin string with validated values
+	 */
+	private function sanitize_field_margin( $field_margin ) {
+		$parts = explode( ' ', $field_margin );
+		$allowed_units = array( 'px', '%' );
+		$sanitized = array();
+
+		foreach ( $parts as $part ) {
+			preg_match( '/^(\d+)(.*)$/', $part, $matches );
+
+			// Is this part correctly structured?
+			if ( ! empty( $matches[1] ) &&
+				in_array( $matches[2], $allowed_units )
+			) {
+				$sanitized[] = $matches[1] . $matches[2];
+			} else {
+				$sanitized[] = '0px';
+			}
+		}
+
+		return implode( ' ', $sanitized );
 	}
 
 	public function update_settings_migration( $new_version, $old_version ) {

@@ -15,41 +15,49 @@ Requires: siteorigin-panels
 class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 	private $toggleSchedulingLegacy;
 	private $premiumMeta;
+	private $exempt_roles;
 
 	public function __construct() {
-		add_filter( 'siteorigin_premium_metabox_form_options', array( $this, 'metabox_options' ), 1 );
-		add_filter( 'the_content', array( $this, 'content_visibility' ), 99 );
-		add_filter( 'template_redirect', array( $this, 'page_visibility' ), 1 );
 
-		if ( ! defined( 'SITEORIGIN_PANELS_VERSION' ) ) {
+		if (
+			! defined( 'SITEORIGIN_PANELS_VERSION' ) ||
+			! defined( 'SOW_BUNDLE_VERSION' )
+		) {
 			return;
 		}
 
-		add_filter( 'siteorigin_panels_row_style_groups', array( $this, 'style_group' ), 10, 3 );
-		add_filter( 'siteorigin_panels_row_style_fields', array( $this, 'style_fields' ), 10, 3 );
-		add_filter( 'siteorigin_panels_widget_style_groups', array( $this, 'style_group' ), 10, 3 );
-		add_filter( 'siteorigin_panels_widget_style_fields', array( $this, 'style_fields' ), 10, 3 );
-		add_filter( 'siteorigin_panels_css_object', array( $this, 'add_row_widget_visibility_css' ), 10, 4 );
+		add_filter( 'siteorigin_premium_metabox_form_options', array( $this, 'metabox_options' ), 1, 1 );
+		add_filter( 'the_content', array( $this, 'content_visibility' ), 99 );
+		add_filter( 'template_redirect', array( $this, 'page_visibility' ), 1 );
 
-		if ( version_compare( SITEORIGIN_PANELS_VERSION, '2.16.7', '>' ) ) {
-			add_filter( 'siteorigin_panels_output_row', array( $this, 'maybe_hide_row_widget' ), 10, 2 );
-			add_filter( 'siteorigin_panels_output_widget', array( $this, 'maybe_hide_row_widget' ), 10, 2 );
-		} else {
-			add_filter( 'siteorigin_panels_layout_data', array( $this, 'layout_data_filter' ), 10, 2 );
+		if ( defined( 'SITEORIGIN_PANELS_VERSION' ) ) {
+			add_filter( 'siteorigin_panels_row_style_groups', array( $this, 'style_group' ), 10, 3 );
+			add_filter( 'siteorigin_panels_row_style_fields', array( $this, 'style_fields' ), 10, 3 );
+			add_filter( 'siteorigin_panels_widget_style_groups', array( $this, 'style_group' ), 10, 3 );
+			add_filter( 'siteorigin_panels_widget_style_fields', array( $this, 'style_fields' ), 10, 3 );
+			add_filter( 'siteorigin_panels_css_object', array( $this, 'add_row_widget_visibility_css' ), 10, 4 );
+
+			if ( version_compare( SITEORIGIN_PANELS_VERSION, '2.16.7', '>' ) ) {
+				add_filter( 'siteorigin_panels_output_row', array( $this, 'maybe_hide_row_widget' ), 10, 2 );
+				add_filter( 'siteorigin_panels_output_widget', array( $this, 'maybe_hide_row_widget' ), 10, 2 );
+			} else {
+				add_filter( 'siteorigin_panels_layout_data', array( $this, 'layout_data_filter' ), 10, 2 );
+			}
+
+			// If a newer version of PB is active, we need to migrate the schedule related settings.
+			if ( version_compare( SITEORIGIN_PANELS_VERSION, '2.17.0', '>=' ) ) {
+				$this->toggleSchedulingLegacy = true;
+				add_filter( 'siteorigin_panels_general_current_styles', array( $this, 'setting_migration' ), 10, 4 );
+				add_filter( 'siteorigin_panels_general_style_fields', array( $this, 'setting_migration_pre_save' ) );
+				add_filter( 'siteorigin_panels_data_pre_save', array( $this, 'setting_migration_save' ), 10, 4 );
+			}
+
+			add_action( 'admin_print_scripts-appearance_page_so_panels_home_page', array( $this, 'enqueue_admin_assets' ), 20 );
 		}
 
 		add_action( 'admin_print_scripts-post-new.php', array( $this, 'enqueue_admin_assets' ), 20 );
 		add_action( 'admin_print_scripts-post.php', array( $this, 'enqueue_admin_assets' ), 20 );
 		add_action( 'admin_print_scripts-widgets.php', array( $this, 'enqueue_admin_assets' ), 20 );
-		add_action( 'admin_print_scripts-appearance_page_so_panels_home_page', array( $this, 'enqueue_admin_assets' ), 20 );
-
-		// If a newer version of PB is active, we need to migrate the schedule related settings.
-		if ( version_compare( SITEORIGIN_PANELS_VERSION, '2.17.0', '>=' ) ) {
-			$this->toggleSchedulingLegacy = true;
-			add_filter( 'siteorigin_panels_general_current_styles', array( $this, 'setting_migration' ), 10, 4 );
-			add_filter( 'siteorigin_panels_general_style_fields', array( $this, 'setting_migration_pre_save' ) );
-			add_filter( 'siteorigin_panels_data_pre_save', array( $this, 'setting_migration_save' ), 10, 4 );
-		}
 
 		add_shortcode( 'toggle_visibility', array( $this, 'shortcode' ) );
 	}
@@ -113,7 +121,7 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 			'soPremiumToggleVisibilityAddon',
 			array(
 				'isRTL' => is_rtl(),
-				'i18n' => include( SITEORIGIN_PREMIUM_DIR . 'inc/datapickeri18n.php' ),
+				'i18n' => include SITEORIGIN_PREMIUM_DIR . 'inc/datapickeri18n.php',
 			)
 		);
 	}
@@ -125,6 +133,49 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 		);
 
 		return $groups;
+	}
+
+	/**
+	 * Get a description of user roles that are exempt.
+	 *
+	 * This method returns a description of the exempt roles. If there are no exempt roles,
+	 * it returns an empty string. If there is one exempt role, it returns a singular message.
+	 * If there are two exempt roles, it returns a message with both roles using `and`
+	 * as a separator. For more than two roles, it returns a message with the remaining
+	 * roles and the last role.
+	 *
+	 * @return string Description of exempt roles.
+	 */
+	private function get_user_roles_description() {
+		if ( empty( $this->exempt_roles ) ) {
+			return '';
+		}
+
+		$roles_count = count( $this->exempt_roles );
+
+		if ( $roles_count === 1 ) {
+			return sprintf(
+				'%s role is exempt.',
+				ucfirst( $this->exempt_roles[0] )
+			);
+		}
+
+		if ( $roles_count === 2 ) {
+			return sprintf(
+				'%s and %s roles are exempt.',
+				ucfirst( $this->exempt_roles[0] ),
+				$this->exempt_roles[1]
+			);
+		}
+
+		$last_role = array_pop( $this->exempt_roles );
+		return sprintf(
+			'%s, and %s roles are exempt.',
+			ucfirst(
+				implode( ', ', $this->exempt_roles )
+			),
+			$last_role
+		);
 	}
 
 	public function style_fields( $fields, $post_id, $args ) {
@@ -260,9 +311,14 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 					'name' => __( 'Roles', 'siteorigin-premium' ),
 					'type' => 'multi-select',
 					'options' => $this->get_roles(),
-				)
+				),
 			),
 		);
+
+		$this->prepare_exempt_roles();
+		if ( ! empty( $this->exempt_roles ) ) {
+			$fields['toggle_user_role']['fields']['roles']['description'] = $this->get_user_roles_description();
+		}
 
 		return $fields;
 	}
@@ -340,46 +396,88 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 		foreach ( $layout_data as $ri => $row ) {
 			// Check if row is disabled on desktop.
 			if ( ! empty( $row['style']['disable_desktop'] ) ) {
-				$css->add_row_css( $post_id, $ri, null, array(
-					'display' => 'none',
-				), ":$desktop_breakpoint" );
+				$css->add_row_css(
+					$post_id,
+					$ri,
+					null,
+					array(
+						'display' => 'none',
+					),
+					":$desktop_breakpoint"
+				);
 			}
 
 			// Check if row is disabled on tablet.
 			if ( ! empty( $row['style']['disable_tablet'] ) && $panels_tablet_width > $panels_mobile_width ) {
-				$css->add_row_css( $post_id, $ri, null, array(
-					'display' => 'none',
-				), "$panels_tablet_width:$tablet_min_width" );
+				$css->add_row_css(
+					$post_id,
+					$ri,
+					null,
+					array(
+						'display' => 'none',
+					),
+					"$panels_tablet_width:$tablet_min_width"
+				);
 			}
 
 			// Check if row is disabled on mobile.
 			if ( ! empty( $row['style']['disable_mobile'] ) ) {
-				$css->add_row_css( $post_id, $ri, null, array(
-					'display' => 'none',
-				), $panels_mobile_width );
+				$css->add_row_css(
+					$post_id,
+					$ri,
+					null,
+					array(
+						'display' => 'none',
+					),
+					$panels_mobile_width
+				);
 			}
 
 			foreach ( $row['cells'] as $ci => $cell ) {
 				foreach ( $cell['widgets'] as $wi => $widget ) {
 					// Check if widget is disabled on desktop.
 					if ( ! empty( $widget['panels_info']['style']['disable_desktop'] ) ) {
-						$css->add_widget_css( $post_id, $ri, $ci, $wi, null, array(
-							'display' => 'none',
-						), ":$desktop_breakpoint" );
+						$css->add_widget_css(
+							$post_id,
+							$ri,
+							$ci,
+							$wi,
+							null,
+							array(
+								'display' => 'none',
+							),
+							":$desktop_breakpoint"
+						);
 					}
 
 					// Check if widget is disabled on tablet.
 					if ( ! empty( $widget['panels_info']['style']['disable_tablet'] ) && $panels_tablet_width > $panels_mobile_width ) {
-						$css->add_widget_css( $post_id, $ri, $ci, $wi, null, array(
-							'display' => 'none',
-						), "$panels_tablet_width:$tablet_min_width" );
+						$css->add_widget_css(
+							$post_id,
+							$ri,
+							$ci,
+							$wi,
+							null,
+							array(
+								'display' => 'none',
+							),
+							"$panels_tablet_width:$tablet_min_width"
+						);
 					}
 
 					// Check if widget is disabled on mobile.
 					if ( ! empty( $widget['panels_info']['style']['disable_mobile'] ) ) {
-						$css->add_widget_css( $post_id, $ri, $ci, $wi, null, array(
-							'display' => 'none',
-						), $panels_mobile_width );
+						$css->add_widget_css(
+							$post_id,
+							$ri,
+							$ci,
+							$wi,
+							null,
+							array(
+								'display' => 'none',
+							),
+							$panels_mobile_width
+						);
 					}
 				}
 			}
@@ -605,15 +703,11 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 	private function get_roles() {
 		$roles = wp_roles()->get_names();
 
-		$exempt_roles = apply_filters(
-			'siteorigin_premium_toggle_visibility_exempt_roles',
-			array(
-				'administrator',
-			)
-		);
-
+		$this->prepare_exempt_roles();
 		// Remove exempt roles from visibility checks.
-		$roles = array_diff_key( $roles, array_flip( $exempt_roles ) );
+		if ( ! empty( $this->exempt_roles ) ) {
+			$roles = array_diff_key( $roles, array_flip( $this->exempt_roles ) );
+		}
 
 		// Clean up the roles to ensure they're safe for output.
 		$clean_roles = array();
@@ -628,6 +722,38 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 	}
 
 	/**
+	 * Prepare the list of exempt user roles.
+	 *
+	 * This function applies the 'siteorigin_premium_toggle_visibility_exempt_roles' filter
+	 * to get the list of roles that are exempt from visibility checks. By default, the
+	 * 'administrator' role is exempt. The result is cached in the $this->exempt_roles property.
+	 *
+	 * @return void
+	 */
+	private function prepare_exempt_roles() {
+		if ( ! empty( $this->exempt_roles ) ) {
+			return $this->exempt_roles;
+		}
+
+		$exempt_roles = apply_filters(
+			'siteorigin_premium_toggle_visibility_exempt_roles',
+			array(
+				'administrator',
+			)
+		);
+
+		if (
+			empty( $exempt_roles ) ||
+			! is_array( $exempt_roles )
+		) {
+			$this->exempt_roles = array();
+			return;
+		}
+
+		$this->exempt_roles = array_map( 'esc_attr', $exempt_roles );
+	}
+
+	/**
 	 * Determines if content should be blocked based on user roles.
 	 *
 	 * @param array $settings Contains 'toggle_display' and 'roles' for visibility control.
@@ -635,11 +761,7 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 	 * @return bool True to block content, false to allow.
 	 */
 	private function check_user_roles( $settings ) {
-		if (
-			empty( $settings ) ||
-			empty( $settings['roles'] ) ||
-			! is_array( $settings['roles'] )
-		) {
+		if ( empty( $settings ) ) {
 			return true;
 		}
 
@@ -653,30 +775,38 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 			return true;
 		}
 
-		$exempt_roles = apply_filters(
-			'siteorigin_premium_toggle_visibility_exempt_roles',
-			array(
-				'administrator',
-			)
-		);
-		if ( ! empty( $exempt_roles ) && is_array( $exempt_roles ) ) {
-			foreach ( $exempt_roles as $role ) {
-				if ( in_array( $role, $user_role ) ) {
-					return false;
-				}
-			}
+		$this->prepare_exempt_roles();
+
+		// If no roles were set by the admin, we'll only allow exempt roles through.
+		if (
+			empty( $settings['roles'] ) ||
+			! is_array( $settings['roles'] )
+		) {
+			return empty( $this->exempt_roles ) ||
+				! array_intersect(
+					$this->exempt_roles,
+					$user_role
+				);
+		}
+
+		// Check if the user is exempt.
+		if (
+			! empty( $this->exempt_roles ) &&
+			array_intersect( $this->exempt_roles, $user_role )
+		) {
+			return false;
 		}
 
 		$toggle_display = $settings['toggle_display'] === 'hide' ? true : false;
 
-		// Check if the current user has any of the allowed roles for visibility.
+		// Check if the current user has any of the flagged roles for visibility.
 		foreach ( $settings['roles'] as $role ) {
 			if ( in_array( $role, $user_role ) ) {
 				return $toggle_display;
 			}
 		}
 
-		return true;
+		return ! $toggle_display;
 	}
 
 	public function metabox_options( $form_options ) {
@@ -807,42 +937,50 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 
 		// To resolve a saving issue with the user roles field,
 		// the user will need a newer version of WB.
-		if ( version_compare( SOW_BUNDLE_VERSION, '1.64.0', '>=' ) ) {
-			$form_options['toggle_visibility']['fields']['status']['options']['user_roles'] = __( 'User Roles', 'siteorigin-premium' );
+		if ( version_compare( SOW_BUNDLE_VERSION, '1.64.0', '<' ) ) {
+			return $form_options;
+		}
 
-			siteorigin_widgets_array_insert(
-				$form_options['toggle_visibility']['fields'],
-				'redirect',
-				array(
-					'toggle_user_roles_data' => array(
-						'type' => 'section',
-						'label' => __( 'User Roles', 'siteorigin-premium' ),
-						'hide' => true,
-						'state_handler' => array(
-							'visibility[user_roles]' => array( 'show' ),
-							'_else[visibility]' => array( 'hide' ),
+		$form_options['toggle_visibility']['fields']['status']['options']['user_roles'] = __( 'User Roles', 'siteorigin-premium' );
+
+		siteorigin_widgets_array_insert(
+			$form_options['toggle_visibility']['fields'],
+			'redirect',
+			array(
+				'toggle_user_roles_data' => array(
+					'type' => 'section',
+					'label' => __( 'User Roles', 'siteorigin-premium' ),
+					'hide' => true,
+					'state_handler' => array(
+						'visibility[user_roles]' => array( 'show' ),
+						'_else[visibility]' => array( 'hide' ),
+					),
+					'fields' => array(
+						'toggle_display' => array(
+							'label' => __( 'Display', 'siteorigin-premium' ),
+							'type' => 'radio',
+							'default' => 'show',
+							'options' => array(
+								'show' => __( 'Show', 'siteorigin-premium' ),
+								'hide' => __( 'Hide', 'siteorigin-premium' ),
+							),
 						),
-						'fields' => array(
-							'toggle_display' => array(
-								'label' => __( 'Display', 'siteorigin-premium' ),
-								'type' => 'radio',
-								'default' => 'show',
-								'options' => array(
-									'show' => __( 'Show', 'siteorigin-premium' ),
-									'hide' => __( 'Hide', 'siteorigin-premium' ),
-								),
-							),
-							'roles' => array(
-								'type' => 'select',
-								'multiple' => true,
-								'select2' => true,
-								'label' => __( 'User Roles', 'siteorigin-premium' ),
-								'options' => $this->get_roles(),
-							),
+						'roles' => array(
+							'type' => 'select',
+							'multiple' => true,
+							'select2' => true,
+							'label' => __( 'User Roles', 'siteorigin-premium' ),
+							'options' => $this->get_roles(),
+
 						),
 					),
-				)
-			);
+				),
+			)
+		);
+
+		// Add a description to the user roles field if there are exempt roles.
+		if ( ! empty( $this->exempt_roles ) ) {
+			$form_options['toggle_visibility']['fields']['toggle_user_roles_data']['fields']['roles']['description'] = $this->get_user_roles_description();
 		}
 
 		return $form_options;
@@ -890,7 +1028,7 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 
 		// Post is scheduled.
 		$type = $this->premiumMeta['toggle_scheduling_data']['toggle_display'];
-		if ( $type === 'disable_logged_out' ||  $type === 'disable_logged_in' ) {
+		if ( $type === 'disable_logged_out' || $type === 'disable_logged_in' ) {
 			$this->premiumMeta['toggle_scheduling_data']['toggle_display'] = 'hide';
 		}
 
@@ -957,11 +1095,13 @@ class SiteOrigin_Premium_Plugin_Toggle_Visibility {
 
 		if ( $this->metabox_visibility_should_hide_page( 'page' ) ) {
 			if ( ! empty( $this->premiumMeta['redirect'] ) ) {
-				wp_redirect( sow_esc_url(
-					do_shortcode(
-						$this->premiumMeta['redirect']
+				wp_redirect(
+					sow_esc_url(
+						do_shortcode(
+							$this->premiumMeta['redirect']
+						)
 					)
-				) );
+				);
 
 				die();
 			} else {

@@ -41,9 +41,9 @@ if ( empty( $product ) ) {
 		) {
 			?>
 			<span class="sku_wrapper">
-				<?php esc_html_e( 'SKU:', 'woocommerce' ); ?>
+				<?php esc_html_e( 'SKU:', 'siteorigin-premium' ); ?>
 				<span class="sku">
-					<?php echo ( $sku = $product->get_sku() ) ? $sku : esc_html__( 'N/A', 'woocommerce' ); ?>
+					<?php echo ( $sku = $product->get_sku() ) ? $sku : esc_html__( 'N/A', 'siteorigin-premium' ); ?>
 				</span>
 			</span>
 			<?php
@@ -54,7 +54,7 @@ if ( empty( $product ) ) {
 		echo wc_get_product_category_list(
 			$product->get_id(),
 			', ',
-			'<span class="posted_in">' . _n( 'Category:', 'Categories:', count( $product->get_category_ids() ), 'woocommerce' ) . ' ',
+			'<span class="posted_in">' . _n( 'Category:', 'Categories:', count( $product->get_category_ids() ), 'siteorigin-premium' ) . ' ',
 			'</span>'
 		);
 	}
@@ -63,7 +63,7 @@ if ( empty( $product ) ) {
 		echo wc_get_product_tag_list(
 			get_the_ID(),
 			', ',
-			'<span class="tagged_as">' . _n( 'Tag:', 'Tags:', count( $product->get_tag_ids() ), 'woocommerce' ) . ' ',
+			'<span class="tagged_as">' . _n( 'Tag:', 'Tags:', count( $product->get_tag_ids() ), 'siteorigin-premium' ) . ' ',
 			'</span>'
 		);
 	}

@@ -76,6 +76,11 @@ jQuery( function( $ ) {
 						}
 					}
 
+					// Should we show the settings dialog for this addon?
+					if ( status && $$.attr( 'data-show-settings-on-activate' ) === 'true' ) {
+						$$.find( '.so-addon-settings' ).trigger( 'click' );
+					}
+
 					$( window ).trigger( 'resize' );
 				}
 			);
@@ -114,7 +119,7 @@ jQuery( function( $ ) {
 
 	var filterAddons = function() {
 		var section = currentSection;
-		var q = $( '.addons-search' ).val();
+		const q = $( '.addons-search' ).val().toLowerCase();
 
 		if ( q === '' ) {
 			if ( section === '' ) {
@@ -208,20 +213,28 @@ jQuery( function( $ ) {
 	$dialog.find( '.so-save' ).on( 'click', function( e ) {
 		e.preventDefault();
 
-		if ( typeof sowbForms.validateFields == 'function' ) {
+		if (
+			typeof sowbForms !== 'undefined' &&
+			typeof sowbForms.validateFields == 'function'
+		) {
 			var validSave = sowbForms.validateFields( $dialog )
 			if ( typeof validSave == 'boolean' && ! validSave ) {
 				return false;
 			}
 		}
 
-		var $$ = $( this );
+		const $$ = $( this );
 		$$.prop( 'disabled', true );
 		$settingsButton.prop( 'disabled', true );
+		const $form = $dialog.find( 'form' );
 
-		$dialog.find( 'form' ).on( 'submit', function() {
+		$form.on( 'submit', function() {
 			$$.prop( 'disabled', false );
 			$dialog.hide();
+
+			$( 'body' ).trigger( 'siteorigin_addon_settings_saved', {
+				id: $$.data( 'id' ),
+			} );
 		} ).trigger( 'submit' );
 	} );
 
@@ -316,4 +329,20 @@ jQuery( function( $ ) {
 			}
 		);
 	} );
+
+	// Check if the URL has an addon parameter and trigger the settings dialog on load.
+	const urlParams = new URLSearchParams( window.location.search );
+	if ( urlParams.has( 'addon' ) ) {
+		let addon;
+		try {
+			addon = decodeURIComponent( urlParams.get( 'addon' ) );
+			const $addon = $( '.so-addon[data-id="' + CSS.escape( addon ) + '"]' );
+
+			if ( $addon.length ) {
+				$addon.find( '.so-addon-settings' ).trigger( 'click' );
+			}
+		} catch ( e ) {
+			console.error( 'SiteOrigin Premium: Invalid URL parameter format for addon.' );
+		}
+	}
 } );

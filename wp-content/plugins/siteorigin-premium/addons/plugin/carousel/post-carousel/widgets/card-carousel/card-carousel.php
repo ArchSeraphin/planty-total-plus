@@ -21,7 +21,7 @@ class SiteOrigin_Premium_Post_Carousel_Cards extends SiteOrigin_Widget_PostCarou
 		// base Post Carousel widget from taking over.
 		SiteOrigin_Widget::__construct(
 			'so-premium-post-carousel-cards',
-			__( 'SiteOrigin Post Carousel Cards', 'so-widgets-bundle' ),
+			__( 'SiteOrigin Post Carousel Cards', 'siteorigin-premium' ),
 			array(
 				'description' => __( 'Display posts in a sleek carousel with modern cards and flexible meta.', 'siteorigin-premium' ),
 				'instance_storage' => true,
@@ -45,6 +45,8 @@ class SiteOrigin_Premium_Post_Carousel_Cards extends SiteOrigin_Widget_PostCarou
 		add_filter( 'siteorigin_widgets_form_options_so-premium-post-carousel-cards', array( $this, 'add_form_options' ), 20, 1 );
 		add_filter( 'siteorigin_widgets_less_variables_so-premium-post-carousel-cards', array( $this, 'add_theme_less_vars' ), 10, 2 );
 		add_filter( 'siteorigin_widgets_template_file_so-premium-post-carousel-cards', array( $this, 'override_template_file' ), 10, 0 );
+		add_filter( 'siteorigin_widgets_post_carousel_ajax_widget_instance', array( $this, 'ajax_get_widget_instance' ), 10, 2 );
+		add_filter( 'siteorigin_widgets_template_variables_so-premium-post-carousel-cards', array( $this, 'add_equal_heights' ), 10, 2 );
 
 		add_filter( 'siteorigin_widgets_template_variables_so-premium-post-carousel-cards', array( $this->carousel_instance, 'post_carousel_template_vars' ), 10, 2 );
 		add_filter( 'siteorigin_widgets_less_file_so-premium-post-carousel-cards', array( $this->carousel_instance, 'post_carousel_add_theme_less' ), 10, 3 );
@@ -53,6 +55,33 @@ class SiteOrigin_Premium_Post_Carousel_Cards extends SiteOrigin_Widget_PostCarou
 
 	public function override_template_file() {
 		return siteorigin_widget_get_plugin_dir_path( 'sow-post-carousel' ) . 'tpl/base.php';
+	}
+
+	/**
+	 * Ensure Cards Carousel widget and instance is loaded correctly when fetching new posts.
+	 *
+	 * This method retrieves the stored instance of the widget based on the provided instance hash.
+	 * If the instance is found, it returns an array containing the instance and the widget.
+	 * If the instance is not found, it returns false.
+	 *
+	 * @param string $instance_hash The hash of the widget instance to retrieve.
+
+	 * @return array|false The stored widget instance and widget, or false if not found.
+	 */
+	public function ajax_get_widget_instance( $instance_hash ) {
+		global $wp_widget_factory;
+
+		$widget = $wp_widget_factory->widgets['SiteOrigin_Premium_Post_Carousel_Cards'];
+
+		$instance = $widget->get_stored_instance( $instance_hash );
+		if ( empty( $instance ) ) {
+			return false;
+		}
+
+		return array(
+			'instance' => $instance,
+			'widget' => $widget,
+		);
 	}
 
 	// Remove anything not used by this widget.
@@ -159,12 +188,7 @@ class SiteOrigin_Premium_Post_Carousel_Cards extends SiteOrigin_Widget_PostCarou
 					'date[show]' => array( 'show' ),
 					'_else[date]' => array( 'hide' ),
 				),
-				'options' => array(
-					'' => sprintf( __( 'Default (%s)', 'siteorigin-premium' ), date( get_option( 'date_format' ) ) ),
-					'Y-m-d' => sprintf( __( 'yyyy-mm-dd (%s)', 'siteorigin-premium' ), date( 'Y/m/d' ) ),
-					'm/d/Y' => sprintf( __( 'mm/dd/yyyy (%s)', 'siteorigin-premium' ), date( 'm/d/Y' ) ),
-					'd/m/Y' => sprintf( __( 'dd/mm/yyyy (%s)', 'siteorigin-premium' ), date( 'd/m/Y' ) ),
-				),
+				'options' => SiteOrigin_Premium_Utility::single()->date_format_options(),
 			),
 			'categories' => array(
 				'type' => 'checkbox',
@@ -509,6 +533,30 @@ class SiteOrigin_Premium_Post_Carousel_Cards extends SiteOrigin_Widget_PostCarou
 
 		$form_options['design']['fields'] = $design_fields;
 
+		// Add Equal Card Heights.
+		$form_options['carousel_settings']['fields']['equal_heights'] = array(
+			'type' => 'checkbox',
+			'label' => __( 'Equal Card Heights', 'siteorigin-premium' ),
+			'default' => true,
+			'state_emitter' => array(
+				'callback' => 'conditional',
+				'args' => array(
+					'equal_heights[show]: val',
+					'equal_heights[hide]: ! val',
+				),
+			),
+		);
+
+		$form_options['carousel_settings']['fields']['dynamic_navigation'] = array(
+			'type' => 'checkbox',
+			'label' => __( 'Dynamic Navigation Position', 'siteorigin-premium' ),
+			'default' => true,
+			'state_handler' => array(
+				'equal_heights[show]' => array( 'show' ),
+				'_else[equal_heights]' => array( 'hide' ),
+			),
+		);
+
 		return $this->form_cleanup( $form_options );
 	}
 
@@ -562,6 +610,10 @@ class SiteOrigin_Premium_Post_Carousel_Cards extends SiteOrigin_Widget_PostCarou
 	public function modify_instance( $instance ) {
 		$instance = parent::modify_instance( $instance );
 
+		if ( empty( $instance ) ) {
+			return $instance;
+		}
+
 		// Is this a valid instance?
 		if ( ! empty( $instance ) ) {
 			// Ensure we have default values. This check is required due to a
@@ -577,6 +629,15 @@ class SiteOrigin_Premium_Post_Carousel_Cards extends SiteOrigin_Widget_PostCarou
 			}
 
 			$instance['design']['theme'] = 'cards';
+		}
+
+		if (
+			isset( $instance['carousel_settings'] ) &&
+			is_array( $instance['carousel_settings'] ) &&
+			! isset( $instance['carousel_settings']['equal_heights'] )
+		) {
+			$instance['carousel_settings']['equal_heights'] = true;
+			$instance['carousel_settings']['dynamic_navigation'] = true;
 		}
 
 		return $instance;
@@ -804,6 +865,29 @@ class SiteOrigin_Premium_Post_Carousel_Cards extends SiteOrigin_Widget_PostCarou
 		);
 
 		return $less_vars;
+	}
+
+	public function add_equal_heights( $template_vars, $instance ) {
+		if (
+			empty( $template_vars ) ||
+			empty( $template_vars['settings'] ) ||
+			empty( $template_vars['settings']['attributes'] ) ||
+			empty( $template_vars['settings']['attributes']['carousel_settings'] ) ||
+			empty( $instance['carousel_settings']['equal_heights'] )
+		) {
+			return $template_vars;
+		}
+
+		$carousel_settings = json_decode( $template_vars['settings']['attributes']['carousel_settings'], true );
+
+		// Equal Heights are known as Adaptive Height in the carousel.
+		$carousel_settings['adaptive_height'] = true;
+		$carousel_settings['dynamic_navigation'] = ! empty( $instance['carousel_settings']['dynamic_navigation'] );
+		$template_vars['settings']['adaptive_height'] = true;
+
+		$template_vars['settings']['attributes']['carousel_settings'] = json_encode( $carousel_settings );
+
+		return $template_vars;
 	}
 }
 siteorigin_widget_register( 'so-premium-post-carousel-cards', __FILE__, 'SiteOrigin_Premium_Post_Carousel_Cards' );

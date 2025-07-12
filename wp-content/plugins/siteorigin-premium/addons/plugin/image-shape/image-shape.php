@@ -24,13 +24,17 @@ class SiteOrigin_Premium_Plugin_Image_Shape {
 		add_filter( 'siteorigin_widgets_image_shape_file_path', array( $this, 'premium_path' ), 10, 2 );
 		add_filter( 'siteorigin_widgets_image_shape_file_url', array( $this, 'premium_url' ), 10, 2 );
 
-		$this->shapes = include plugin_dir_path( __FILE__ ) . 'data/premium-shapes.php';
+		add_action( 'init', array( $this, 'load_shapes' ), 9, 0 );
 	}
 
 	public static function single() {
 		static $single;
 
 		return empty( $single ) ? $single = new self() : $single;
+	}
+
+	public function load_shapes() {
+		$this->shapes = include plugin_dir_path( __FILE__ ) . 'data/premium-shapes.php';
 	}
 
 	public function load_custom_shape_emitter() {

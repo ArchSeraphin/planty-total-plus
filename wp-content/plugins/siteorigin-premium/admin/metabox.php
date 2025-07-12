@@ -4,6 +4,28 @@
  * This metabox is the box that appears when users create new custom layouts..
  */
 class SiteOrigin_Premium_Metabox extends SiteOrigin_Widget {
+	private $ignore_fields = array(
+		'tab',
+		'type',
+		'section',
+		'hide',
+		'label',
+		'options',
+		'state_handler',
+		'state_emitter',
+		'args',
+		'callback',
+		'default',
+		'description',
+		'fallback',
+	);
+
+	private $special_keys = array(
+		'so_field_container_state',
+		'_sow_form_timestamp',
+		'_sow_form_id'
+	);
+
 	public function __construct() {
 		parent::__construct(
 			'siteorigin-premium',
@@ -103,27 +125,63 @@ class SiteOrigin_Premium_Metabox extends SiteOrigin_Widget {
 	}
 
 	/**
-	 * Accounts empty values being present in a form options array.
+	 * Ensure all fields from form_options are present in instance.
+	 *
+	 * This function processes the form options array and the values array,
+	 * ensuring that all fields are present in the instance array. It does
+	 * this by rebuilding the $instance array.
+	 *
+	 * WB specific values instance variables are maintained.
 	 *
 	 * @param array $form_options The form options array.
 	 * @param array $values The values array.
+	 *
 	 * @return array The modified instance array.
-	 */
-	private function account_for_empty( $form_options, $values ) {
+	*/
+	private function ensure_all_fields_present( $form_options, $values ) {
 		$instance = array();
 
 		foreach ( $form_options as $id => $field ) {
-			if ( is_array( $field ) ) {
-				$instance[ $id ] = $this->account_for_empty(
-					$field,
+			if ( in_array( $id, $this->ignore_fields ) ) {
+				continue;
+			}
+
+			if ( $field['type'] === 'section' ) {
+				$instance[ $id ] = $this->ensure_all_fields_present(
+					$field['fields'],
 					isset( $values[ $id ] ) ? $values[ $id ] : array()
 				);
-			} else {
-				if ( isset( $values[ $id ] ) ) {
-					$instance[ $id ] = $values[ $id ];
-				} else {
-					$instance[ $id ] = false;
-				}
+				continue;
+			}
+
+			// If there is a value for this field, and it's an array, we need to
+			// handle it slightly differently to support multiple select fields.
+			if (
+				isset( $values[ $id ] ) &&
+				is_array( $values[ $id ] )
+			) {
+				$instance[ $id ] = count( $values[ $id ] ) > 1 ? $values[ $id ] : $values[ $id ][0];
+				continue;
+			}
+
+			$instance[ $id ] = isset( $values[ $id ] ) ? $values[ $id ] : '';
+
+			// Measurement fields store the unit in a separate field.
+			if (
+				! empty( $instance[ $id ] ) &&
+				$field['type'] === 'measurement'
+			) {
+				$instance[ $id . '_unit' ] = isset( $values[ $id . '_unit' ] ) ? $values[ $id . '_unit' ] : 'px';
+			}
+		}
+
+		// Include WB specific values not found in form options.
+		foreach ( $values as $id => $value ) {
+			if (
+				! isset( $id, $instance ) &&
+				in_array( $id, $this->special_keys )
+			) {
+				 $instance[ $id ] = $value;
 			}
 		}
 
@@ -144,7 +202,6 @@ class SiteOrigin_Premium_Metabox extends SiteOrigin_Widget {
 			! empty( $_POST['widget-siteorigin-premium'][1] )
 		) {
 			$values = $_POST['widget-siteorigin-premium'][1];
-
 			$form_options = $this->get_widget_form();
 			unset( $form_options['tabs'] );
 
@@ -157,18 +214,12 @@ class SiteOrigin_Premium_Metabox extends SiteOrigin_Widget {
 				'metabox'
 			);
 
-			// Load defaults, and account for empty values.
-			$instance = $this->add_defaults( $form_options, $instance );
-			$instance = $this->account_for_empty( $instance, $instance );
+			$instance = $this->ensure_all_fields_present( $form_options, $instance );
 
 			update_post_meta(
 				$post_id,
 				'siteorigin_premium_meta',
-				$this->update(
-					$instance,
-					! empty( $meta ) ? $meta : false,
-					'metabox'
-				)
+				$instance
 			);
 		}
 

@@ -1,14 +1,31 @@
 
 ( function( $ ) {
 	$( window.sowb ).on( 'maps_loaded autocomplete_loaded', function( e ) {
+
+		const setMarkerLocation = ( map, userLocation ) => {
+			// Is the Advanced Marker active?
+			if ( typeof map.centerMarker.setPosition === 'undefined' ) {
+				new window.google.maps.marker.AdvancedMarkerElement( {
+					position: userLocation,
+					map: map,
+					title: ''
+				} );
+				return;
+			}
+
+			map.centerMarker.setPosition( userLocation );
+		};
+
 		var processUserLocation = function( position ) {
 			window.sowb.SiteOriginGoogleMapInstances.forEach( function( map ) {
 				var $mapElement = $( map.getDiv() );
 				if ( $mapElement.data( 'options' )['center_user_location'] ) {
 					var userLocation = new google.maps.LatLng( position.coords.latitude, position.coords.longitude );
+
 					map.setCenter( userLocation );
+
 					if ( map.centerMarker ) {
-						map.centerMarker.setPosition( userLocation );
+						setMarkerLocation( map, userLocation );
 					}
 
 					var autoCompleteField = $mapElement.prev();

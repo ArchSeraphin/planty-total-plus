@@ -339,33 +339,38 @@
 		}
 	}
 
-	.slick-dots {
+	ul.slick-dots {
 
 		& when not ( isnumber( @navigation_dots_desktop ) ) {
+
 			@media (min-width: @breakpoint_tablet_landscape) {
 				display: none !important;
 			}
 		}
 
 		& when not ( isnumber( @navigation_dots_tablet_landscape ) ) {
+
 			@media (min-width: @breakpoint_tablet_portrait) and (max-width: @breakpoint_tablet_landscape) {
 				display: none !important;
 			}
 		}
 
 		& when not ( isnumber( @navigation_dots_tablet_portrait ) ) {
+
 			@media (min-width: @breakpoint_mobile) and (max-width: @breakpoint_tablet_portrait) {
 				display: none !important;
 			}
 		}
 
 		& when not ( isnumber( @navigation_dots_mobile ) ) {
+
 			@media (max-width: @breakpoint_mobile) {
 				display: none !important;
 			}
 		}
 
 		li {
+
 			&.slick-active button {
 				background: @navigation_dots_color_hover;
 			}
@@ -382,42 +387,61 @@
 	}
 }
 
-.sow-carousel-navigation {
+.sow-carousel-container {
 
-	& when not ( isnumber( @navigation_desktop ) ) {
+	.hide-navigation-mixin() {
+
+		.sow-carousel-wrapper {
+			width: 100%;
+		}
+
+		.sow-carousel-navigation {
+			display: none;
+		}
+	}
+
+	// Desktop
+	& when not (isnumber(@navigation_desktop)) {
+
 		@media (min-width: @breakpoint_tablet_landscape) {
-			display: none;
+			.hide-navigation-mixin();
 		}
 	}
 
-	& when not ( isnumber( @navigation_tablet_landscape ) ) {
+	// Tablet landscape
+	& when not (isnumber(@navigation_tablet_landscape)) {
+
 		@media (min-width: @breakpoint_tablet_portrait) and (max-width: @breakpoint_tablet_landscape) {
-			display: none;
+			.hide-navigation-mixin();
 		}
 	}
 
-	& when not ( isnumber( @navigation_tablet_portrait ) ) {
+	// Tablet portrait.
+	& when not (isnumber(@navigation_tablet_portrait)) {
+
 		@media (min-width: @breakpoint_mobile) and (max-width: @breakpoint_tablet_portrait) {
-			display: none;
+			.hide-navigation-mixin();
 		}
 	}
 
-	& when not ( isnumber( @navigation_mobile ) ) {
+	// Mobile.
+	& when not (isnumber(@navigation_mobile)) {
+
 		@media (max-width: @breakpoint_mobile) {
-			display: none;
+			.hide-navigation-mixin();
 		}
 	}
 
-	a.sow-carousel-next,
-	a.sow-carousel-previous {
-		color: @navigation_color;
-
-		&:focus,
-		&:hover {
-			color: @navigation_color_hover;
+	.sow-carousel-navigation {
+		a.sow-carousel-next,
+		a.sow-carousel-previous {
+			color: @navigation_color;
+			&:focus,
+			&:hover {
+				color: @navigation_color_hover;
+			}
 		}
 	}
-
 }
 
 & when( @navigation_arrows = 1 ) {

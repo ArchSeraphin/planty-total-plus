@@ -37,6 +37,8 @@ if ( empty( $order ) ) {
 
 // Store Order for later use by Thank You widgets.
 set_query_var( 'siteorigin-premium-wctb-order', $order );
+
+do_action( 'siteorigin_premium_wctb_template_before', 'thank_you' );
 ?>
 <div class="woocommerce-order">
 	<?php
@@ -47,3 +49,6 @@ set_query_var( 'siteorigin-premium-wctb-order', $order );
 	SiteOrigin_Premium_Plugin_WooCommerce_Templates::single()->after_template_render();
 	?>
 </div>
+
+<?php
+do_action( 'siteorigin_premium_wctb_template_after', 'thank_you' );

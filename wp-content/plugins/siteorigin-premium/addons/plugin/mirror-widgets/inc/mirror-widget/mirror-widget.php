@@ -32,6 +32,7 @@ class SiteOrigin_Premium_Widget_Mirror_Widget extends SiteOrigin_Widget {
 		return array(
 			'mirror_widget' => array(
 				'type' => 'select',
+				'select2' => true,
 				'options' => $mirror_widgets,
 			),
 		);

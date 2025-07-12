@@ -7,7 +7,33 @@ require_once get_template_directory() . '/inc/widgets/add-widget.php';
 
 require_once get_template_directory() . '/inc/widgets/widget-fields.php';
 
-$active_widgets = array_keys(of_get_option('enabled_widgets', total_plus_widget_list()));
+$active_widgets = array_keys(of_get_option('enabled_widgets', array(
+    'widget-accordian' => 1,
+    'widget-banner-ads' => 1,
+    'widget-cta' => 1,
+    'widget-contact-detail' => 1,
+    'widget-contact-info' => 1,
+    'widget-countdown' => 1,
+    'widget-counter' => 1,
+    'widget-facebook-box' => 1,
+    'widget-highlight-block' => 1,
+    'widget-flickr' => 1,
+    'widget-icon-text' => 1,
+    'widget-image-box' => 1,
+    'widget-latest-posts' => 1,
+    'widget-portfolio-carousel' => 1,
+    'widget-portfolio-masonary' => 1,
+    'widget-pricing' => 1,
+    'widget-profile' => 1,
+    'widget-progressbar' => 1,
+    'widget-social-icons' => 1,
+    'widget-tab' => 1,
+    'widget-team' => 1,
+    'widget-team-carousel' => 1,
+    'widget-testimonial' => 1,
+    'widget-testimonial-carousel' => 1,
+    'widget-testimonial-slider' => 1
+)));
 
 if (is_array($active_widgets)) {
     foreach ($active_widgets as $widgets) {

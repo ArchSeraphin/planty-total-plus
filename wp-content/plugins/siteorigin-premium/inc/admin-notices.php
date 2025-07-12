@@ -10,8 +10,6 @@ class SiteOrigin_Premium_Admin_Notices {
 	 * Create the instance of the Premium Admin notices
 	 */
 	public function __construct() {
-		$this->notices = include SiteOrigin_Premium::dir_path( __FILE__ ) . 'notices.php';
-
 		add_action( 'admin_notices', array( $this, 'display_admin_notices' ) );
 		add_action( 'wp_ajax_so_premium_dismiss', array( $this, 'dismiss_action' ) );
 	}
@@ -20,6 +18,14 @@ class SiteOrigin_Premium_Admin_Notices {
 		static $single;
 
 		return empty( $single ) ? $single = new self() : $single;
+	}
+
+	private function load_notices() {
+		if ( ! empty( $this->notices ) ) {
+			return;
+		}
+
+		$this->notices = include SiteOrigin_Premium::dir_path( __FILE__ ) . 'notices.php';
 	}
 
 	public function display_admin_notices() {
@@ -153,6 +159,7 @@ class SiteOrigin_Premium_Admin_Notices {
 	 * @return array
 	 */
 	public function get_displayed_notices() {
+		$this->load_notices();
 		$active = get_option( 'siteorigin_premium_active_notices', array() );
 		$dismissed = get_option( 'siteorigin_premium_dismissed_notices', array() );
 

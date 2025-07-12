@@ -191,29 +191,47 @@ jQuery( function( $ ) {
 			);
 		},
 
-		infiniteScroller: function( nav ) {
+		infiniteScroller: ( nav ) => {
 			const { $el, totalPages } = nav;
-			if ( totalPages == $el.data( 'paged' ) ) {
+			let currentPage = parseInt( $el.data( 'paged' ) );
+
+			if ( currentPage >= totalPages ) {
 				// No more posts to load, abort.
 				return;
 			}
 
-			let currentScrollPos = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-			let BlogBottomPos = $el.offset().top + $el.height();
+			const observerCallback = ( entries, observer ) => {
+				entries.forEach( entry => {
+					if ( entry.isIntersecting ) {
+						// Load more posts when the last post is in view
+						SiteOriginPremium.sowBlogWidget.loadMorePosts( nav );
 
-			// Calculate when we need to fetch posts.
-			// If the Blog Widgets bottom position is larger than two screen lengths, offset the bottom pos using that.
-			if ( BlogBottomPos > window.innerHeight * 2 ) {
-				BlogBottomPos -= window.innerHeight * 2;
-			} else {
-				// Otherwise, fetch posts when the user scrolls to the third last post.
-				let posts = $el.find( '.sow-blog-posts > article' );
-				BlogBottomPos = posts.eq( posts.length - 3 ).offset().top;
-			}
+						observer.unobserve( entry.target );
+						// Update the current page and observe the new last post
+						currentPage++;
+						if ( currentPage < totalPages ) {
+							const posts = $el.find( '.sow-blog-posts > article' );
+							const lastPost = posts[ posts.length - 1 ];
+							observer.observe( lastPost );
+						}
+					}
+				} );
+			};
 
-			if ( currentScrollPos > BlogBottomPos ) {
-				SiteOriginPremium.sowBlogWidget.loadMorePosts( nav );
-			}
+			const observer = new IntersectionObserver(
+				observerCallback,
+				{
+					root: null,
+					rootMargin: '0px',
+					// Load posts a little before the last post is in view.
+					threshold: 0.8,
+				}
+			);
+
+			// Set the last post as the initial target.
+			const posts = $el.find( '.sow-blog-posts > article' );
+			const lastPost = posts[ posts.length - 1 ];
+			observer.observe( lastPost );
 		},
 
 		setupAnimation: function( nav ) {
