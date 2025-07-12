@@ -57,13 +57,6 @@ Version: 1.0
     font-weight: 400;
 }
 
-
-/*h1, h2, h3 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-}*/
-
-
 /* FOOTER */
 .footer-mentions {
     text-align: center;
@@ -183,7 +176,7 @@ Version: 1.0
   position: relative;
 }
 
-/* FORMULAIRE */
+/* FORMULAIRES */
 .title-h2-form {
 		font-family: 'Syne', sans-serif;
 		font-weight: 700;
@@ -219,6 +212,26 @@ hr {
     margin-bottom: 0;
 }
 
+/* FORMULAIRE NOUS CONTACTER */
+
+.decor-form {
+  position: relative;
+  z-index: 1;
+}
+
+.decor-form::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 30%;
+  width: 185px;
+  height: 178px;
+  background-image: url('http://localhost:8888/wp-content/uploads/2025/07/deco3.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: -1;
+}
+
 
 
 /*CTA */
@@ -241,6 +254,16 @@ hr {
     }
 }
 
+@media (max-width: 1024px) {
+    .decor-form::before {
+        display: none;
+    }
+    .divider-bottom {
+        clip-path: none;
+    }
+}
+
+
 @media screen and (max-width: 580px) {
     .ht-image-box.image-left .ht-ib-image, .ht-image-box.image-right .ht-ib-image {
         margin: 0 0 30px;
@@ -248,11 +271,11 @@ hr {
     }
     
     h1.sow-headline {
-        font-size: 32px;
+        font-size: 30px;
     }
 
     .gout-card h3 {
-    font-size: 32px;
+        font-size: 32px;
     }   
 }
 
