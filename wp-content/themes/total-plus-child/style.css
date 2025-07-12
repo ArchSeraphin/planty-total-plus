@@ -76,4 +76,143 @@ h1, h2, h3 {
     color: #000; 
 }
 
+/* CANETTE HERO */
+.canette-compo {
+  position: relative;
+  width: 300px;
+	right: 15px;
+  margin: auto;
+}
 
+.canette-wrap {
+  position: relative;
+  width: 100%;
+  z-index: 10;
+}
+
+.canette-wrap img {
+  width: 100%;
+  display: block;
+}
+
+.canette-wrap::before,
+.canette-wrap::after {
+  content: "";
+  position: absolute;
+  top: 6%;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  z-index: -1;
+}
+
+.canette-wrap::before {
+  left: -45%;
+  background-image: url('http://localhost:8888/wp-content/uploads/2025/07/feuille-gauche.png');
+}
+
+.canette-wrap::after {
+  right: -55%;
+  background-image: url('http://localhost:8888/wp-content/uploads/2025/07/feuille-droite.png');
+}
+/* FIN CANETTE HERO */
+
+/* DIVIDER BOTTOM 1 */
+.divider-bottom {
+  clip-path: ellipse(155% 100% at 50% 0%);
+}
+
+/* GOUT */
+.gouts-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+	margin: 20px;
+	gap: 20px;
+}
+
+.gout-card {
+  width: 393px;
+  height: 262px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.gout-card h3 {
+  color: white;
+	font-family: 'Syne', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  text-transform: uppercase;
+	margin: 0;
+}
+
+/* AVIS CARD */ 
+.avis-card span {
+		font-family: 'Syne', sans-serif;
+		font-weight: 700;
+		font-size: 30px;
+}
+
+/* FEUILLE BOTTOM */
+.decor-feuille {
+  position: absolute;
+  bottom: -40px;
+  right: 50px;
+  width: 220px;
+		z-index: -1;
+}
+
+.decor-feuille img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.relative-parent {
+  position: relative;
+}
+
+/* FORMULAIRE */
+.title-h2-form {
+		font-family: 'Syne', sans-serif;
+		font-weight: 700;
+		font-size: 30px;
+		color: white;
+}
+
+.fluent_form_3 label {
+		font-family: 'Syne', sans-serif;
+		font-weight: 400;
+		font-size: 20px;
+		color: white;
+}
+ff-el-input--label
+input[type="number"] {
+  width: 70px !important;
+}
+
+hr {
+  background-color: #fff
+}
+
+.ff-t-cell ff-t-column-1 {
+		border-right: 1px solid white;
+    padding-right: 15px;
+}
+
+
+
+/*CTA */
+.ht-menu > ul > li > a, a.ht-header-bttn {
+	font-family: 'Syne', sans-serif;
+	font-weight: 400;
+	font-size: 14px;
+	color: white;	
+}
