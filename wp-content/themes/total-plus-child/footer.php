@@ -18,7 +18,7 @@ if (is_singular(array('post', 'page', 'product', 'portfolio'))) {
 if (!$hide_footer) :
 ?>
 
-<footer id="ht-colophon" class="ht-site-footer custom-footer" style="background: #fff; padding: 0;">
+<footer id="footer-new" class="ht-site-footer custom-footer" style="background: #fff; padding: 0;">
 
     <!-- Mentions légales -->
     <div class="footer-mentions">

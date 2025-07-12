@@ -64,18 +64,16 @@ h1, h2, h3 {
 .footer-mentions {
     text-align: center;
     font-size: 14px;
-    margin: 15px 0 20px;
+    margin: 20px;
     background: #fff;
 }
 
-#ht-colophon a {
-    color: #000;
-}
-
-#ht-colophon:before {
-    background: none;
-}
-
-#ht-colophon a:hover {
+.footer-mentions a:hover {
     text-decoration: underline;
 }
+
+.ht-site-footer * {
+    color: #000; 
+}
+
+
