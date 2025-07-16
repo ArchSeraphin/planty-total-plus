@@ -51,10 +51,14 @@ Version: 1.0
     padding-left: 30px;
 }
 
-/* FONTS */
+/* FONTS MENU */
 .ht-main-navigation, .ht-menu>ul>li>a {
     font-family: 'Syne', sans-serif;
     font-weight: 400;
+}
+
+.ht-main-navigation, .ht-menu>ul>li>a:hover {
+    font-weight: 700;
 }
 
 /* FOOTER */
@@ -71,6 +75,11 @@ Version: 1.0
 
 .ht-site-footer * {
     color: #000; 
+}
+
+.ht-site-footer custom-footer {
+    background: #fff;
+    padding: 0;
 }
 
 /* CANETTE HERO */
