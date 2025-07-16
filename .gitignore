@@ -11,5 +11,3 @@ wp-content/upgrade/
 .idea/
 .vscode/
 
-# Clés de config sensibles
-wp-config.php
